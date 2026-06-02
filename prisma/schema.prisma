@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Auth (NextAuth) ───────────────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+
+  accounts        Account[]
+  sessions        Session[]
+  programs        Program[]
+  workoutSessions WorkoutSession[]
+  cardioSessions  CardioSession[]
+  personalRecords PersonalRecord[]
+}
+
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([provider, providerAccountId])
+}
+
+model Session {
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+}
+
+// ─── Exercise Library ──────────────────────────────────────────────────────
+
+model Exercise {
+  id          String           @id @default(cuid())
+  name        String
+  nameIt      String?
+  category    ExerciseCategory
+  muscleGroup String[]
+  gifUrl      String?
+  youtubeUrl  String?
+  description String?
+  isGlobal    Boolean          @default(true)
+
+  templateItems   TemplateExercise[]
+  sessionSets     WorkoutSet[]
+  personalRecords PersonalRecord[]
+}
+
+enum ExerciseCategory {
+  PUSH
+  PULL
+  LEGS
+  CORE
+  FULL_BODY
+}
+
+// ─── Programs ─────────────────────────────────────────────────────────────
+
+model Program {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  weeks     Int      @default(6)
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  days     ProgramDay[]
+  sessions WorkoutSession[]
+}
+
+model ProgramDay {
+  id        String @id @default(cuid())
+  programId String
+  dayNumber Int
+  name      String
+
+  program   Program            @relation(fields: [programId], references: [id], onDelete: Cascade)
+  exercises TemplateExercise[]
+  sessions  WorkoutSession[]
+}
+
+model TemplateExercise {
+  id             String  @id @default(cuid())
+  programDayId   String
+  exerciseId     String
+  order          Int
+  targetSets     Int     @default(3)
+  targetRepsLow  Int     @default(8)
+  targetRepsHigh Int     @default(12)
+  plannedLoads   Json    @default("{}")
+  intensityZone  String?
+  notes          String?
+
+  programDay ProgramDay @relation(fields: [programDayId], references: [id], onDelete: Cascade)
+  exercise   Exercise   @relation(fields: [exerciseId], references: [id])
+}
+
+// ─── Workout Sessions ─────────────────────────────────────────────────────
+
+model WorkoutSession {
+  id           String    @id @default(cuid())
+  userId       String
+  programId    String?
+  programDayId String?
+  weekNumber   Int?
+  date         DateTime
+  durationMins Int?
+  notes        String?
+  completed    Boolean   @default(false)
+  createdAt    DateTime  @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  program    Program?    @relation(fields: [programId], references: [id])
+  programDay ProgramDay? @relation(fields: [programDayId], references: [id])
+  sets       WorkoutSet[]
+}
+
+model WorkoutSet {
+  id               String  @id @default(cuid())
+  workoutSessionId String
+  exerciseId       String
+  setNumber        Int
+  weight           Float?
+  reps             Int?
+  rpe              Int?
+  completed        Boolean @default(false)
+  notes            String?
+
+  workoutSession WorkoutSession @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
+  exercise       Exercise       @relation(fields: [exerciseId], references: [id])
+}
+
+// ─── Cardio Sessions ──────────────────────────────────────────────────────
+
+model CardioSession {
+  id           String     @id @default(cuid())
+  userId       String
+  date         DateTime
+  type         CardioType
+  durationMins Int
+  distanceKm   Float?
+  avgHeartRate Int?
+  calories     Int?
+  notes        String?
+  createdAt    DateTime   @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum CardioType {
+  CORSA
+  CICLISMO
+  HIIT
+  CAMMINATA
+  NUOTO
+  ALTRO
+}
+
+// ─── Personal Records ─────────────────────────────────────────────────────
+
+model PersonalRecord {
+  id         String   @id @default(cuid())
+  userId     String
+  exerciseId String
+  weight     Float
+  reps       Int
+  date       DateTime
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise Exercise @relation(fields: [exerciseId], references: [id])
+
+  @@unique([userId, exerciseId])
+}
