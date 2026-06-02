@@ -1,18 +1,12 @@
 import type { NextAuthConfig } from "next-auth"
-import Google from "next-auth/providers/google"
-import GitHub from "next-auth/providers/github"
+import Credentials from "next-auth/providers/credentials"
 
 // Config leggera senza adapter Prisma — usata nel proxy (Edge Runtime)
 export const authConfig: NextAuthConfig = {
   providers: [
-    Google({
-      clientId: process.env.AUTH_GOOGLE_ID,
-      clientSecret: process.env.AUTH_GOOGLE_SECRET,
-    }),
-    GitHub({
-      clientId: process.env.AUTH_GITHUB_ID,
-      clientSecret: process.env.AUTH_GITHUB_SECRET,
-    }),
+    // Il provider Credentials è dichiarato qui ma la verifica
+    // avviene in auth.ts dove Prisma è disponibile
+    Credentials({ credentials: { email: {}, password: {} } }),
   ],
   pages: {
     signIn: "/auth/signin",

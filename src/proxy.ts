@@ -4,7 +4,8 @@ import { getToken } from "next-auth/jwt"
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
   const isPublic =
-    pathname.startsWith("/auth") || pathname.startsWith("/api/auth")
+    pathname.startsWith("/auth") ||
+    pathname.startsWith("/api/auth")
 
   if (!isPublic) {
     const token = await getToken({ req, secret: process.env.AUTH_SECRET })
