@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getToken } from "next-auth/jwt"
 
 export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl
@@ -8,15 +7,13 @@ export async function proxy(req: NextRequest) {
     pathname.startsWith("/api/auth")
 
   if (!isPublic) {
-    // NextAuth v5 usa "authjs.session-token" (non "next-auth.session-token" di v4)
-    // Su HTTPS (produzione) il cookie ha il prefisso __Secure-
-    const secure = req.nextUrl.protocol === "https:"
-    const cookieName = secure
-      ? "__Secure-authjs.session-token"
-      : "authjs.session-token"
+    // NextAuth v5 usa cookie "authjs.session-token" (HTTPS: "__Secure-authjs.session-token")
+    const hasSession =
+      req.cookies.has("authjs.session-token") ||
+      req.cookies.has("__Secure-authjs.session-token") ||
+      req.cookies.has("__Host-authjs.session-token")
 
-    const token = await getToken({ req, secret: process.env.AUTH_SECRET, cookieName })
-    if (!token) {
+    if (!hasSession) {
       return NextResponse.redirect(new URL("/auth/signin", req.url))
     }
   }
