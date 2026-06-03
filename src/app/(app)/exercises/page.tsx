@@ -3,8 +3,10 @@
 import { useState, useEffect, useCallback } from "react"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Dumbbell, Search, Play, X } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Dumbbell, Search, X, ChevronLeft, ChevronRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface Exercise {
@@ -16,6 +18,14 @@ interface Exercise {
   gifUrl: string | null
   youtubeUrl: string | null
   description: string | null
+}
+
+interface ApiResponse {
+  exercises: Exercise[]
+  total: number
+  page: number
+  limit: number
+  pages: number
 }
 
 const CATEGORIES = [
@@ -43,10 +53,7 @@ function getYouTubeId(url: string) {
 function ExerciseImage({ src, alt, animate = false }: { src: string | null; alt: string; animate?: boolean }) {
   const [err, setErr] = useState(false)
   const [frame, setFrame] = useState(0)
-
-  // Derive the alternate frame URL (0.jpg ↔ 1.jpg)
   const src1 = src?.replace("/0.jpg", "/1.jpg") ?? null
-  const currentSrc = frame === 0 ? src : src1
 
   useEffect(() => {
     if (!animate || !src || err) return
@@ -64,47 +71,75 @@ function ExerciseImage({ src, alt, animate = false }: { src: string | null; alt:
   }
   return (
     <img
-      src={currentSrc ?? src}
+      src={frame === 0 ? src : (src1 ?? src)}
       alt={alt}
-      className="w-full h-full object-cover transition-opacity duration-300"
+      className="w-full h-full object-cover"
       onError={() => setErr(true)}
     />
   )
 }
 
 export default function ExercisesPage() {
-  const [exercises, setExercises] = useState<Exercise[]>([])
-  const [query, setQuery] = useState("")
+  const [data, setData]         = useState<ApiResponse | null>(null)
+  const [query, setQuery]       = useState("")
   const [category, setCategory] = useState("all")
+  const [page, setPage]         = useState(1)
+  const [limit, setLimit]       = useState(50)
+  const [loading, setLoading]   = useState(true)
   const [selected, setSelected] = useState<Exercise | null>(null)
-  const [loading, setLoading] = useState(true)
 
-  const fetchExercises = useCallback(async () => {
+  const fetch_ = useCallback(async () => {
     setLoading(true)
-    const params = new URLSearchParams()
-    if (query) params.set("q", query)
+    const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+    if (query)              params.set("q", query)
     if (category !== "all") params.set("category", category)
-    const res = await fetch(`/api/exercises?${params}`)
-    const data = await res.json()
-    setExercises(data)
+    const res  = await fetch(`/api/exercises?${params}`)
+    const json = await res.json()
+    setData(json)
     setLoading(false)
-  }, [query, category])
+  }, [query, category, page, limit])
+
+  // Reset to page 1 when filter/search/limit changes
+  useEffect(() => { setPage(1) }, [query, category, limit])
 
   useEffect(() => {
-    const t = setTimeout(fetchExercises, 250)
+    const t = setTimeout(fetch_, query ? 300 : 0)
     return () => clearTimeout(t)
-  }, [fetchExercises])
+  }, [fetch_])
 
-  const catLabel = CATEGORIES.find((c) => c.key === category)?.label ?? "Tutti"
+  const exercises = data?.exercises ?? []
+  const total     = data?.total ?? 0
+  const pages     = data?.pages ?? 1
+  const from      = total === 0 ? 0 : (page - 1) * limit + 1
+  const to        = Math.min(page * limit, total)
 
   return (
-    <div className="space-y-6 max-w-6xl mx-auto">
+    <div className="space-y-5 max-w-6xl mx-auto">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Libreria Esercizi</h1>
-        <p className="text-muted-foreground text-sm mt-1">
-          {loading ? "..." : `${exercises.length} esercizi`} · Clicca per vedere la demo
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Libreria Esercizi</h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            {loading ? "..." : `${from}–${to} di ${total} esercizi`}
+          </p>
+        </div>
+        {/* Per-page selector */}
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="text-sm text-muted-foreground">Per pagina</span>
+          <Select
+            value={String(limit)}
+            onValueChange={(v) => v && setLimit(Number(v))}
+          >
+            <SelectTrigger className="w-20 h-9">
+              <SelectValue>{limit}</SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {[25, 50, 75, 100].map((n) => (
+                <SelectItem key={n} value={String(n)}>{n}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Search */}
@@ -147,7 +182,7 @@ export default function ExercisesPage() {
       {/* Grid */}
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4">
-          {Array.from({ length: 10 }).map((_, i) => (
+          {Array.from({ length: limit }).map((_, i) => (
             <div key={i} className="aspect-[3/4] rounded-2xl bg-muted animate-pulse" />
           ))}
         </div>
@@ -166,9 +201,7 @@ export default function ExercisesPage() {
               className="group relative aspect-[3/4] rounded-2xl overflow-hidden bg-muted shadow-sm hover:shadow-lg transition-all duration-300 text-left"
             >
               <ExerciseImage src={ex.gifUrl} alt={ex.nameIt ?? ex.name} />
-              {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              {/* Text */}
               <div className="absolute bottom-0 left-0 right-0 p-3">
                 <p className="text-white text-sm font-semibold leading-tight line-clamp-2">
                   {ex.nameIt ?? ex.name}
@@ -177,15 +210,58 @@ export default function ExercisesPage() {
                   <span className={cn("text-xs px-2 py-0.5 rounded-full font-medium", CATEGORY_COLORS[ex.category])}>
                     {CATEGORIES.find((c) => c.key === ex.category)?.label ?? ex.category}
                   </span>
-                  {ex.youtubeUrl && (
-                    <span className="bg-red-500 rounded-full p-0.5">
-                      <Play className="h-2.5 w-2.5 text-white fill-white" />
-                    </span>
-                  )}
                 </div>
               </div>
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {pages > 1 && (
+        <div className="flex items-center justify-center gap-2 pt-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1 || loading}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          {/* Page numbers */}
+          {Array.from({ length: pages }, (_, i) => i + 1)
+            .filter((p) => p === 1 || p === pages || Math.abs(p - page) <= 2)
+            .reduce<(number | "…")[]>((acc, p, i, arr) => {
+              if (i > 0 && p - (arr[i - 1] as number) > 1) acc.push("…")
+              acc.push(p)
+              return acc
+            }, [])
+            .map((p, i) =>
+              p === "…" ? (
+                <span key={`ellipsis-${i}`} className="px-1 text-muted-foreground text-sm">…</span>
+              ) : (
+                <Button
+                  key={p}
+                  variant={p === page ? "default" : "outline"}
+                  size="sm"
+                  className="w-9"
+                  onClick={() => setPage(p as number)}
+                  disabled={loading}
+                >
+                  {p}
+                </Button>
+              )
+            )}
+
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setPage((p) => Math.min(pages, p + 1))}
+            disabled={page === pages || loading}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
         </div>
       )}
 
@@ -194,7 +270,6 @@ export default function ExercisesPage() {
         <DialogContent className="max-w-lg p-0 overflow-hidden rounded-2xl">
           {selected && (
             <>
-              {/* Image header */}
               <div className="relative h-64 bg-muted">
                 <ExerciseImage src={selected.gifUrl} alt={selected.nameIt ?? selected.name} animate />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -206,10 +281,7 @@ export default function ExercisesPage() {
                   </DialogHeader>
                 </div>
               </div>
-
-              {/* Content */}
               <div className="p-5 space-y-4">
-                {/* Tags */}
                 <div className="flex flex-wrap gap-2">
                   <span className={cn("text-xs px-2.5 py-1 rounded-full font-medium", CATEGORY_COLORS[selected.category])}>
                     {CATEGORIES.find((c) => c.key === selected.category)?.label}
@@ -218,21 +290,18 @@ export default function ExercisesPage() {
                     <Badge key={m} variant="outline" className="text-xs">{m}</Badge>
                   ))}
                 </div>
-
-                {/* YouTube embed */}
                 {selected.youtubeUrl && getYouTubeId(selected.youtubeUrl) && (
                   <div className="aspect-video rounded-xl overflow-hidden bg-black">
                     <iframe
                       className="w-full h-full"
-                      src={`https://www.youtube.com/embed/${getYouTubeId(selected.youtubeUrl)}?autoplay=0&rel=0`}
+                      src={`https://www.youtube.com/embed/${getYouTubeId(selected.youtubeUrl)}?rel=0`}
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
                     />
                   </div>
                 )}
-
                 {selected.description && (
-                  <p className="text-sm text-muted-foreground">{selected.description}</p>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{selected.description}</p>
                 )}
               </div>
             </>
