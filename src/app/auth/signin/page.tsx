@@ -16,10 +16,15 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setLoading(true)
     setError("")
+
+    // Read from DOM directly to handle browser autofill
+    const formData = new FormData(e.currentTarget)
+    const emailVal = (formData.get("email") as string) || email
+    const passwordVal = (formData.get("password") as string) || password
 
     try {
       // Get CSRF token
@@ -31,8 +36,8 @@ export default function SignInPage() {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: new URLSearchParams({
-          email,
-          password,
+          email: emailVal,
+          password: passwordVal,
           csrfToken,
           callbackUrl: "/dashboard",
         }),
@@ -75,22 +80,24 @@ export default function SignInPage() {
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="tua@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                required
+                autoComplete="email"
               />
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="password">Password</Label>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                required
+                autoComplete="current-password"
               />
             </div>
             {error && (
