@@ -14,7 +14,17 @@ export async function loginAction(_prevState: unknown, formData: FormData) {
     if (error instanceof AuthError) {
       return { error: "Email o password errati" }
     }
-    // Re-throw NEXT_REDIRECT so Next.js handles navigation
+    // signIn ha chiamato redirect() — i cookie di sessione sono già settati.
+    // Restituiamo { redirect: true } invece di ri-lanciare, così il client naviga.
+    if (
+      error &&
+      typeof error === "object" &&
+      "digest" in error &&
+      typeof (error as { digest: string }).digest === "string" &&
+      (error as { digest: string }).digest.startsWith("NEXT_REDIRECT")
+    ) {
+      return { redirect: true }
+    }
     throw error
   }
 }

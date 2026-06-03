@@ -1,6 +1,7 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,7 +13,14 @@ import { buttonVariants } from "@/components/ui/button"
 import { loginAction } from "./actions"
 
 export default function SignInPage() {
+  const router = useRouter()
   const [state, formAction, isPending] = useActionState(loginAction, null)
+
+  useEffect(() => {
+    if (state?.redirect) {
+      router.push("/dashboard")
+    }
+  }, [state, router])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
