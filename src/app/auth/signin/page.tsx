@@ -9,10 +9,9 @@ import { Dumbbell } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
+import { loginAction } from "./actions"
 
 export default function SignInPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
 
@@ -21,45 +20,14 @@ export default function SignInPage() {
     setLoading(true)
     setError("")
 
-    // Read from DOM directly to handle browser autofill
     const formData = new FormData(e.currentTarget)
-    const emailVal = (formData.get("email") as string) || email
-    const passwordVal = (formData.get("password") as string) || password
+    const result = await loginAction(formData)
 
-    try {
-      // Get CSRF token
-      const csrfRes = await fetch("/api/auth/csrf")
-      const { csrfToken } = await csrfRes.json()
-
-      // POST credentials — follow redirect to see final URL
-      const res = await fetch("/api/auth/callback/credentials", {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: new URLSearchParams({
-          email: emailVal,
-          password: passwordVal,
-          csrfToken,
-          callbackUrl: "/dashboard",
-        }),
-        redirect: "follow",
-      })
-
-      const finalUrl = res.url
-      if (res.redirected && !finalUrl.includes("error=")) {
-        window.location.href = "/dashboard"
-      } else if (finalUrl.includes("error=")) {
-        setError("Email o password errati")
-        setLoading(false)
-      } else if (res.ok) {
-        window.location.href = "/dashboard"
-      } else {
-        setError("Errore durante l'accesso. Riprova.")
-        setLoading(false)
-      }
-    } catch {
-      setError("Errore di rete. Controlla la connessione.")
+    if (result?.error) {
+      setError(result.error)
       setLoading(false)
     }
+    // Se non c'è errore, Next.js gestisce il redirect automaticamente
   }
 
   return (
@@ -83,9 +51,8 @@ export default function SignInPage() {
                 name="email"
                 type="email"
                 placeholder="tua@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
                 autoComplete="email"
+                required
               />
             </div>
             <div className="space-y-1.5">
@@ -95,13 +62,12 @@ export default function SignInPage() {
                 name="password"
                 type="password"
                 placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
                 autoComplete="current-password"
+                required
               />
             </div>
             {error && (
-              <p className="text-sm text-destructive text-center">{error}</p>
+              <p className="text-sm text-destructive text-center font-medium">{error}</p>
             )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Accesso in corso..." : "Accedi"}
