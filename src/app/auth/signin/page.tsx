@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useActionState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,23 +12,7 @@ import { buttonVariants } from "@/components/ui/button"
 import { loginAction } from "./actions"
 
 export default function SignInPage() {
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
-
-    const formData = new FormData(e.currentTarget)
-    const result = await loginAction(formData)
-
-    if (result?.error) {
-      setError(result.error)
-      setLoading(false)
-    }
-    // Se non c'è errore, Next.js gestisce il redirect automaticamente
-  }
+  const [state, formAction, isPending] = useActionState(loginAction, null)
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
@@ -43,7 +27,7 @@ export default function SignInPage() {
           <CardDescription>Accedi al tuo account</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form action={formAction} className="space-y-4">
             <div className="space-y-1.5">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -66,11 +50,13 @@ export default function SignInPage() {
                 required
               />
             </div>
-            {error && (
-              <p className="text-sm text-destructive text-center font-medium">{error}</p>
+            {state?.error && (
+              <p className="text-sm text-destructive text-center font-medium">
+                {state.error}
+              </p>
             )}
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Accesso in corso..." : "Accedi"}
+            <Button type="submit" className="w-full" disabled={isPending}>
+              {isPending ? "Accesso in corso..." : "Accedi"}
             </Button>
           </form>
           <p className="text-center text-sm text-muted-foreground mt-4">
