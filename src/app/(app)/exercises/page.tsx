@@ -165,7 +165,7 @@ export default function ExercisesPage() {
               onClick={() => setSelected(ex)}
               className="group relative aspect-[3/4] rounded-2xl overflow-hidden bg-muted shadow-sm hover:shadow-lg transition-all duration-300 text-left"
             >
-              <ExerciseImage src={ex.gifUrl} alt={ex.nameIt ?? ex.name} animate />
+              <ExerciseImage src={ex.gifUrl} alt={ex.nameIt ?? ex.name} />
               {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               {/* Text */}
