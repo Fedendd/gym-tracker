@@ -26,7 +26,7 @@ export default function SignInPage() {
       const csrfRes = await fetch("/api/auth/csrf")
       const { csrfToken } = await csrfRes.json()
 
-      // POST credentials
+      // POST credentials — follow redirect to see final URL
       const res = await fetch("/api/auth/callback/credentials", {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -35,21 +35,20 @@ export default function SignInPage() {
           password,
           csrfToken,
           callbackUrl: "/dashboard",
-          json: "true",
         }),
         redirect: "follow",
       })
 
-      if (res.ok || res.redirected) {
+      const finalUrl = res.url
+      if (res.redirected && !finalUrl.includes("error=")) {
+        window.location.href = "/dashboard"
+      } else if (finalUrl.includes("error=")) {
+        setError("Email o password errati")
+        setLoading(false)
+      } else if (res.ok) {
         window.location.href = "/dashboard"
       } else {
-        const url = new URL(res.url)
-        const errParam = url.searchParams.get("error")
-        if (errParam) {
-          setError("Email o password errati")
-        } else {
-          setError("Errore durante l'accesso. Riprova.")
-        }
+        setError("Errore durante l'accesso. Riprova.")
         setLoading(false)
       }
     } catch {
