@@ -7,18 +7,12 @@ export async function proxy(req: NextRequest) {
     pathname.startsWith("/api/auth")
 
   if (!isPublic) {
-    const allCookies = [...req.cookies.getAll()].map(c => c.name)
-    console.log("[PROXY]", pathname, "cookies:", allCookies.join(", ") || "NESSUNO")
-
     const hasSession =
       req.cookies.has("authjs.session-token") ||
       req.cookies.has("__Secure-authjs.session-token") ||
       req.cookies.has("__Host-authjs.session-token")
 
-    console.log("[PROXY] hasSession:", hasSession)
-
     if (!hasSession) {
-      console.log("[PROXY] redirect a signin")
       return NextResponse.redirect(new URL("/auth/signin", req.url))
     }
   }

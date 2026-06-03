@@ -80,7 +80,9 @@ export default function ExercisesPage() {
         </div>
         <Select value={category} onValueChange={(v) => v && setCategory(v)}>
           <SelectTrigger className="w-40">
-            <SelectValue placeholder="Categoria" />
+            <SelectValue>
+              {category === "all" ? "Tutte" : (CATEGORY_LABELS[category] ?? category)}
+            </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tutte</SelectItem>
