@@ -20,8 +20,7 @@ export async function GET(req: NextRequest) {
         category ? { category: category as never } : {},
       ],
     },
-    orderBy: { name: "asc" },
-    take: 50,
+    orderBy: { nameIt: "asc" },
   })
 
   return NextResponse.json(exercises)
