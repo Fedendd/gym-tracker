@@ -1,37 +1,60 @@
 "use client"
 
 import { useState } from "react"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Dumbbell } from "lucide-react"
-import { toast } from "sonner"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 
 export default function SignInPage() {
-  const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    })
-    setLoading(false)
-    if (res?.error) {
-      toast.error("Email o password errati")
-    } else {
-      router.push("/dashboard")
+    setError("")
+
+    try {
+      // Get CSRF token
+      const csrfRes = await fetch("/api/auth/csrf")
+      const { csrfToken } = await csrfRes.json()
+
+      // POST credentials
+      const res = await fetch("/api/auth/callback/credentials", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          email,
+          password,
+          csrfToken,
+          callbackUrl: "/dashboard",
+          json: "true",
+        }),
+        redirect: "follow",
+      })
+
+      if (res.ok || res.redirected) {
+        window.location.href = "/dashboard"
+      } else {
+        const url = new URL(res.url)
+        const errParam = url.searchParams.get("error")
+        if (errParam) {
+          setError("Email o password errati")
+        } else {
+          setError("Errore durante l'accesso. Riprova.")
+        }
+        setLoading(false)
+      }
+    } catch {
+      setError("Errore di rete. Controlla la connessione.")
+      setLoading(false)
     }
   }
 
@@ -71,13 +94,23 @@ export default function SignInPage() {
                 required
               />
             </div>
+            {error && (
+              <p className="text-sm text-destructive text-center">{error}</p>
+            )}
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? "Accesso in corso..." : "Accedi"}
             </Button>
           </form>
           <p className="text-center text-sm text-muted-foreground mt-4">
             Non hai un account?{" "}
-            <Link href="/auth/register" className={cn("underline", buttonVariants({ variant: "link", size: "sm" }), "p-0 h-auto")}>
+            <Link
+              href="/auth/register"
+              className={cn(
+                "underline",
+                buttonVariants({ variant: "link", size: "sm" }),
+                "p-0 h-auto"
+              )}
+            >
               Registrati
             </Link>
           </p>
