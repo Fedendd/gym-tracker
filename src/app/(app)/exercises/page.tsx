@@ -40,8 +40,20 @@ function getYouTubeId(url: string) {
   return m ? m[1] : null
 }
 
-function ExerciseImage({ src, alt }: { src: string | null; alt: string }) {
+function ExerciseImage({ src, alt, animate = false }: { src: string | null; alt: string; animate?: boolean }) {
   const [err, setErr] = useState(false)
+  const [frame, setFrame] = useState(0)
+
+  // Derive the alternate frame URL (0.jpg ↔ 1.jpg)
+  const src1 = src?.replace("/0.jpg", "/1.jpg") ?? null
+  const currentSrc = frame === 0 ? src : src1
+
+  useEffect(() => {
+    if (!animate || !src || err) return
+    const interval = setInterval(() => setFrame((f) => (f === 0 ? 1 : 0)), 700)
+    return () => clearInterval(interval)
+  }, [animate, src, err])
+
   if (!src || err) {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center bg-muted gap-2">
@@ -52,9 +64,9 @@ function ExerciseImage({ src, alt }: { src: string | null; alt: string }) {
   }
   return (
     <img
-      src={src}
+      src={currentSrc ?? src}
       alt={alt}
-      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+      className="w-full h-full object-cover transition-opacity duration-300"
       onError={() => setErr(true)}
     />
   )
@@ -91,7 +103,7 @@ export default function ExercisesPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Libreria Esercizi</h1>
         <p className="text-muted-foreground text-sm mt-1">
-          {exercises.length} esercizi · Clicca per vedere la demo
+          {loading ? "..." : `${exercises.length} esercizi`} · Clicca per vedere la demo
         </p>
       </div>
 
@@ -153,7 +165,7 @@ export default function ExercisesPage() {
               onClick={() => setSelected(ex)}
               className="group relative aspect-[3/4] rounded-2xl overflow-hidden bg-muted shadow-sm hover:shadow-lg transition-all duration-300 text-left"
             >
-              <ExerciseImage src={ex.gifUrl} alt={ex.nameIt ?? ex.name} />
+              <ExerciseImage src={ex.gifUrl} alt={ex.nameIt ?? ex.name} animate />
               {/* Gradient overlay */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
               {/* Text */}
@@ -184,7 +196,7 @@ export default function ExercisesPage() {
             <>
               {/* Image header */}
               <div className="relative h-64 bg-muted">
-                <ExerciseImage src={selected.gifUrl} alt={selected.nameIt ?? selected.name} />
+                <ExerciseImage src={selected.gifUrl} alt={selected.nameIt ?? selected.name} animate />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 right-4">
                   <DialogHeader>
