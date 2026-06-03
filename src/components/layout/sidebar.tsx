@@ -16,21 +16,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-const navItems = [
+export const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/workouts", label: "Allenamenti", icon: Dumbbell },
-  { href: "/programs", label: "Programmi", icon: ClipboardList },
-  { href: "/exercises", label: "Esercizi", icon: BookOpen },
-  { href: "/cardio", label: "Cardio", icon: Activity },
-  { href: "/analytics", label: "Progressi", icon: BarChart3 },
+  { href: "/workouts",  label: "Allenamenti", icon: Dumbbell },
+  { href: "/programs",  label: "Programmi",   icon: ClipboardList },
+  { href: "/exercises", label: "Esercizi",    icon: BookOpen },
+  { href: "/cardio",    label: "Cardio",      icon: Activity },
+  { href: "/analytics", label: "Progressi",   icon: BarChart3 },
 ]
 
 interface SidebarProps {
-  user: {
-    name?: string | null
-    email?: string | null
-    image?: string | null
-  }
+  user: { name?: string | null; email?: string | null; image?: string | null }
 }
 
 export function Sidebar({ user }: SidebarProps) {
@@ -41,7 +37,7 @@ export function Sidebar({ user }: SidebarProps) {
     : user.email?.[0].toUpperCase() ?? "?"
 
   return (
-    <aside className="w-60 shrink-0 flex flex-col border-r bg-card">
+    <aside className="hidden md:flex w-60 shrink-0 flex-col border-r bg-card">
       <div className="p-5 border-b">
         <div className="flex items-center gap-2">
           <Dumbbell className="h-6 w-6 text-primary" />
@@ -89,5 +85,30 @@ export function Sidebar({ user }: SidebarProps) {
         </Button>
       </div>
     </aside>
+  )
+}
+
+export function BottomNav() {
+  const pathname = usePathname()
+
+  return (
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t flex items-stretch">
+      {navItems.map(({ href, label, icon: Icon }) => {
+        const active = pathname === href || pathname.startsWith(href + "/")
+        return (
+          <Link
+            key={href}
+            href={href}
+            className={cn(
+              "flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors",
+              active ? "text-primary" : "text-muted-foreground"
+            )}
+          >
+            <Icon className={cn("h-5 w-5", active && "stroke-[2.5]")} />
+            <span className="leading-none">{label}</span>
+          </Link>
+        )
+      })}
+    </nav>
   )
 }
