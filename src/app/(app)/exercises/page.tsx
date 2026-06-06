@@ -172,7 +172,7 @@ export default function ExercisesPage() {
             onClick={() => setCategory(cat.key)}
             aria-pressed={category === cat.key}
             className={cn(
-              "px-4 py-2 rounded-full text-sm font-medium transition-all min-h-[36px]",
+              "px-4 py-2 rounded-full text-sm font-medium transition-colors min-h-[36px]",
               category === cat.key
                 ? cat.color + " shadow-sm"
                 : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -202,7 +202,7 @@ export default function ExercisesPage() {
             <button
               key={ex.id}
               onClick={() => setSelected(ex)}
-              className="group relative aspect-[3/4] rounded-2xl overflow-hidden bg-muted shadow-sm hover:shadow-lg transition-all duration-300 text-left"
+              className="group relative aspect-[3/4] rounded-2xl overflow-hidden bg-muted shadow-sm hover:shadow-md transition-shadow duration-200 text-left"
             >
               <ExerciseImage src={ex.gifUrl} alt={ex.nameIt ?? ex.name} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />

@@ -287,7 +287,7 @@ export default function NewWorkoutPage() {
       {/* Exercises */}
       <div className="space-y-3">
         {exerciseGroups.map((group, groupIdx) => (
-          <Card key={groupIdx}>
+          <Card key={group.exerciseId + groupIdx} className="animate-fade-up">
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex items-center gap-2 min-w-0">
