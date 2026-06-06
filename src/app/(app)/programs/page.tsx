@@ -55,7 +55,7 @@ export default async function ProgramsPage() {
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CardTitle className="text-lg">{program.name}</CardTitle>
+                    <CardTitle className="text-lg truncate">{program.name}</CardTitle>
                     {program.isActive && <Badge className="text-xs">Attivo</Badge>}
                   </div>
                   <div className="flex items-center gap-2">

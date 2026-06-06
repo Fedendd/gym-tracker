@@ -36,6 +36,7 @@ const TYPE_LABELS: Record<string, { label: string; emoji: string }> = {
 export default function CardioPage() {
   const [sessions, setSessions] = useState<CardioSession[]>([])
   const [open, setOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [form, setForm] = useState({
     date: format(new Date(), "yyyy-MM-dd"),
     type: "CORSA",
@@ -57,7 +58,7 @@ export default function CardioPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!form.durationMins) { toast.error("Inserisci la durata"); return }
-
+    setSaving(true)
     const res = await fetch("/api/cardio", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -70,6 +71,7 @@ export default function CardioPage() {
       }),
     })
 
+    setSaving(false)
     if (res.ok) {
       toast.success("Sessione cardio salvata!")
       setOpen(false)
@@ -171,7 +173,9 @@ export default function CardioPage() {
                   rows={2}
                 />
               </div>
-              <Button type="submit" className="w-full">Salva sessione</Button>
+              <Button type="submit" className="w-full" disabled={saving}>
+                {saving ? "Salvataggio..." : "Salva sessione"}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>
@@ -181,19 +185,19 @@ export default function CardioPage() {
       <div className="grid grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold">{sessions.length}</p>
+            <p className="text-2xl font-bold tabular-nums">{sessions.length}</p>
             <p className="text-xs text-muted-foreground mt-1">sessioni totali</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold">{totalMinutes}</p>
+            <p className="text-2xl font-bold tabular-nums">{totalMinutes}</p>
             <p className="text-xs text-muted-foreground mt-1">minuti totali</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold">{avgDuration}</p>
+            <p className="text-2xl font-bold tabular-nums">{avgDuration}</p>
             <p className="text-xs text-muted-foreground mt-1">min media sessione</p>
           </CardContent>
         </Card>

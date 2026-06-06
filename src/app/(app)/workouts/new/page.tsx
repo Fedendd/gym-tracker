@@ -42,6 +42,9 @@ interface ExerciseGroup {
   sets: SetData[]
   gifUrl: string | null
   youtubeUrl: string | null
+  intensityZone?: string | null
+  targetRepsLow?: number
+  targetRepsHigh?: number
 }
 
 interface ProgramDay {
@@ -116,6 +119,9 @@ export default function NewWorkoutPage() {
         exerciseName: te.exercise.nameIt ?? te.exercise.name,
         gifUrl: te.exercise.gifUrl,
         youtubeUrl: te.exercise.youtubeUrl,
+        intensityZone: te.intensityZone,
+        targetRepsLow: te.targetRepsLow,
+        targetRepsHigh: te.targetRepsHigh,
         sets: Array.from({ length: te.targetSets }, (_, i) => ({
           exerciseId: te.exerciseId,
           exerciseName: te.exercise.nameIt ?? te.exercise.name,
@@ -281,14 +287,27 @@ export default function NewWorkoutPage() {
         {exerciseGroups.map((group, groupIdx) => (
           <Card key={groupIdx}>
             <CardHeader className="pb-2">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">{group.exerciseName}</CardTitle>
-                <div className="flex gap-1">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <CardTitle className="text-base truncate">{group.exerciseName}</CardTitle>
+                  {group.intensityZone && (
+                    <span className="shrink-0 text-xs px-2 py-0.5 rounded-full bg-primary/10 text-primary font-medium">
+                      {group.intensityZone}
+                    </span>
+                  )}
+                  {group.targetRepsLow != null && group.targetRepsHigh != null && (
+                    <span className="shrink-0 text-xs text-muted-foreground font-mono">
+                      {group.targetRepsLow}–{group.targetRepsHigh} reps
+                    </span>
+                  )}
+                </div>
+                <div className="flex gap-1 shrink-0">
                   {(group.gifUrl || group.youtubeUrl) && (
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-muted-foreground"
+                      aria-label="Mostra demo esercizio"
                       onClick={() => setDemoExercise({ id: group.exerciseId, name: group.exerciseName, nameIt: group.exerciseName, category: "", gifUrl: group.gifUrl, youtubeUrl: group.youtubeUrl })}
                     >
                       <BookOpen className="h-4 w-4" />
@@ -418,7 +437,7 @@ export default function NewWorkoutPage() {
             rows={2}
           />
         </div>
-        <Button className="w-full" onClick={handleSave} disabled={saving}>
+        <Button className="w-full" onClick={handleSave} disabled={saving || exerciseGroups.length === 0}>
           {saving ? "Salvataggio..." : "Salva allenamento"}
         </Button>
       </div>

@@ -69,7 +69,7 @@ export default async function WorkoutsPage() {
                         <p className="font-semibold">
                           {s.programDay?.name ?? "Sessione libera"}
                           {s.weekNumber && (
-                            <span className="text-xs text-muted-foreground ml-2">W{s.weekNumber}</span>
+                            <span className="text-xs text-muted-foreground ml-2">Sett. {s.weekNumber}</span>
                           )}
                         </p>
                         <p className="text-xs text-muted-foreground">

@@ -141,19 +141,19 @@ export default function AnalyticsPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold">{workouts.length}</p>
+            <p className="text-2xl font-bold tabular-nums">{workouts.length}</p>
             <p className="text-xs text-muted-foreground mt-1">allenamenti totali</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold">{cardio.length}</p>
+            <p className="text-2xl font-bold tabular-nums">{cardio.length}</p>
             <p className="text-xs text-muted-foreground mt-1">sessioni cardio</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold">
+            <p className="text-2xl font-bold tabular-nums">
               {Math.round(workouts.reduce((acc, w) => acc + (w.durationMins ?? 0), 0) / 60)}h
             </p>
             <p className="text-xs text-muted-foreground mt-1">ore totali di forza</p>
@@ -161,7 +161,7 @@ export default function AnalyticsPage() {
         </Card>
         <Card>
           <CardContent className="p-4 text-center">
-            <p className="text-2xl font-bold">
+            <p className="text-2xl font-bold tabular-nums">
               {Math.round(cardio.reduce((acc, c) => acc + c.durationMins, 0) / 60)}h
             </p>
             <p className="text-xs text-muted-foreground mt-1">ore totali cardio</p>
@@ -185,8 +185,8 @@ export default function AnalyticsPage() {
               <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} />
               <Tooltip />
               <Legend />
-              <Bar yAxisId="left" dataKey="volume" name="Volume kg" fill="#3b82f6" radius={[3, 3, 0, 0]} />
-              <Bar yAxisId="right" dataKey="cardio" name="Cardio min" fill="#f97316" radius={[3, 3, 0, 0]} />
+              <Bar yAxisId="left" dataKey="volume" name="Volume (kg)" fill="#156f45" radius={[3, 3, 0, 0]} />
+              <Bar yAxisId="right" dataKey="cardio" name="Cardio (min)" fill="#d97706" radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -234,7 +234,7 @@ export default function AnalyticsPage() {
                   <YAxis tick={{ fontSize: 11 }} />
                   <Tooltip />
                   <Legend />
-                  <Line type="monotone" dataKey="weight" name="Peso (kg)" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="weight" name="Peso (kg)" stroke="#156f45" strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             )}
