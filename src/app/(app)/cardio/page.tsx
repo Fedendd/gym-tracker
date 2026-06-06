@@ -54,7 +54,7 @@ export default function CardioPage() {
 
   useEffect(() => { fetchSessions() }, [])
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!form.durationMins) { toast.error("Inserisci la durata"); return }
 
@@ -76,7 +76,8 @@ export default function CardioPage() {
       setForm({ date: format(new Date(), "yyyy-MM-dd"), type: "CORSA", durationMins: "", distanceKm: "", avgHeartRate: "", calories: "", notes: "" })
       fetchSessions()
     } else {
-      toast.error("Errore nel salvataggio")
+      const err = await res.json().catch(() => null)
+      toast.error(err?.message ?? `Errore ${res.status}: impossibile salvare la sessione`)
     }
   }
 
@@ -121,6 +122,7 @@ export default function CardioPage() {
                   <Label>Durata (min) *</Label>
                   <Input
                     type="number"
+                    inputMode="numeric"
                     placeholder="15"
                     value={form.durationMins}
                     onChange={(e) => setForm({ ...form, durationMins: e.target.value })}
@@ -130,6 +132,7 @@ export default function CardioPage() {
                   <Label>Distanza (km)</Label>
                   <Input
                     type="number"
+                    inputMode="decimal"
                     step="0.1"
                     placeholder="3.5"
                     value={form.distanceKm}
@@ -142,6 +145,7 @@ export default function CardioPage() {
                   <Label>FC media (bpm)</Label>
                   <Input
                     type="number"
+                    inputMode="numeric"
                     placeholder="145"
                     value={form.avgHeartRate}
                     onChange={(e) => setForm({ ...form, avgHeartRate: e.target.value })}
@@ -151,6 +155,7 @@ export default function CardioPage() {
                   <Label>Calorie</Label>
                   <Input
                     type="number"
+                    inputMode="numeric"
                     placeholder="200"
                     value={form.calories}
                     onChange={(e) => setForm({ ...form, calories: e.target.value })}

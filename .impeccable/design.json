@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-06-06T00:00:00Z",
+  "title": "Design System: Gym Tracker",
+  "extensions": {
+    "colorMeta": {
+      "primary":      { "role": "primary",   "displayName": "Verde Atleta",      "canonical": "oklch(0.38 0.175 150)", "tonalRamp": ["oklch(0.15 0.175 150)", "oklch(0.22 0.175 150)", "oklch(0.30 0.175 150)", "oklch(0.38 0.175 150)", "oklch(0.48 0.175 150)", "oklch(0.57 0.195 150)", "oklch(0.70 0.140 150)", "oklch(0.88 0.050 150)"] },
+      "amber-cardio": { "role": "secondary",  "displayName": "Ambra Cardio",      "canonical": "oklch(0.65 0.155 55)",  "tonalRamp": ["oklch(0.25 0.155 55)",  "oklch(0.35 0.155 55)",  "oklch(0.45 0.155 55)",  "oklch(0.55 0.155 55)",  "oklch(0.65 0.155 55)",  "oklch(0.72 0.155 55)",  "oklch(0.82 0.100 55)",  "oklch(0.93 0.040 55)"] },
+      "background":   { "role": "neutral",    "displayName": "Fondo Bianco",      "canonical": "oklch(1 0 0)",           "tonalRamp": ["oklch(0.10 0 0)", "oklch(0.20 0 0)", "oklch(0.40 0 0)", "oklch(0.60 0 0)", "oklch(0.80 0 0)", "oklch(0.90 0 0)", "oklch(0.96 0 0)", "oklch(1 0 0)"] },
+      "foreground":   { "role": "neutral",    "displayName": "Quasi-Nero Verdastro", "canonical": "oklch(0.13 0.010 150)", "tonalRamp": ["oklch(0.13 0.010 150)", "oklch(0.22 0.010 150)", "oklch(0.35 0.010 150)", "oklch(0.48 0.012 150)", "oklch(0.60 0.010 150)", "oklch(0.75 0.007 150)", "oklch(0.88 0.005 150)", "oklch(0.97 0.003 150)"] },
+      "destructive":  { "role": "danger",     "displayName": "Rosso Errore",      "canonical": "oklch(0.577 0.245 27.325)", "tonalRamp": ["oklch(0.25 0.245 27)", "oklch(0.35 0.245 27)", "oklch(0.45 0.245 27)", "oklch(0.55 0.245 27)", "oklch(0.65 0.200 27)", "oklch(0.75 0.150 27)", "oklch(0.85 0.090 27)", "oklch(0.95 0.030 27)"] }
+    },
+    "typographyMeta": {
+      "title":  { "displayName": "Title",     "purpose": "Titoli di pagina. Una sola h1 per schermata." },
+      "body":   { "displayName": "Body",      "purpose": "Testo di corpo, descrizioni." },
+      "label":  { "displayName": "Label",     "purpose": "Metadati, date, contatori secondari." },
+      "mono":   { "displayName": "Mono Data", "purpose": "Numeri confrontabili: pesi, reps, RPE, volume." }
+    },
+    "shadows": [
+      { "name": "hover-lift",    "value": "0 4px 12px rgba(0,0,0,0.08)", "purpose": "Hover state su card cliccabili (shadow-md)." },
+      { "name": "interactive-sm","value": "0 1px 4px rgba(0,0,0,0.06)",  "purpose": "Stato default su elementi interattivi (shadow-sm)." }
+    ],
+    "motion": [
+      { "name": "state-change",    "value": "150ms ease",                          "purpose": "Transizioni di stato rapide: colore, opacità, shadow." },
+      { "name": "entrance-subtle", "value": "200ms cubic-bezier(0.4, 0, 0.2, 1)",  "purpose": "Entrata card/content. Solo con prefers-reduced-motion: no-preference." },
+      { "name": "theme-toggle",    "value": "200ms ease",                          "purpose": "background-color e color in body per dark/light switch." }
+    ],
+    "breakpoints": [
+      { "name": "md", "value": "768px",  "purpose": "Breakpoint principale: sidebar desktop vs bottom nav mobile." },
+      { "name": "lg", "value": "1024px", "purpose": "Grid espanso: 3 colonne per le griglie di dati." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "CTA principale. Usato per avviare sessioni, salvare, confermare.",
+      "html": "<button class=\"ds-btn-primary\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><line x1=\"12\" y1=\"5\" x2=\"12\" y2=\"19\"/><line x1=\"5\" y1=\"12\" x2=\"19\" y2=\"12\"/></svg> Allenamento</button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; gap: 6px; background: oklch(0.38 0.175 150); color: oklch(0.985 0 0); padding: 8px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 500; border: none; cursor: pointer; transition: background 150ms ease, box-shadow 150ms ease; } .ds-btn-primary:hover { background: oklch(0.33 0.175 150); box-shadow: 0 1px 4px rgba(0,0,0,0.08); } .ds-btn-primary:focus-visible { outline: 2px solid oklch(0.38 0.175 150); outline-offset: 2px; } .ds-btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Azione secondaria. Usato affianco al primary per azioni alternative.",
+      "html": "<button class=\"ds-btn-outline\">+ Cardio</button>",
+      "css": ".ds-btn-outline { display: inline-flex; align-items: center; gap: 6px; background: transparent; color: oklch(0.13 0.010 150); padding: 8px 16px; border-radius: 8px; font-size: 0.875rem; font-weight: 500; border: 1px solid oklch(0.922 0.007 150); cursor: pointer; transition: background 150ms ease, border-color 150ms ease; } .ds-btn-outline:hover { background: oklch(0.965 0.007 150); border-color: oklch(0.80 0.010 150); } .ds-btn-outline:focus-visible { outline: 2px solid oklch(0.38 0.175 150); outline-offset: 2px; }"
+    },
+    {
+      "name": "Data Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Card statistica dashboard. Icon + numero grande + label secondaria.",
+      "html": "<div class=\"ds-data-card\"><div class=\"ds-data-card__icon\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><polygon points=\"12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2\"/></svg></div><div><p class=\"ds-data-card__number\">4</p><p class=\"ds-data-card__label\">sessioni questa settimana</p></div></div>",
+      "css": ".ds-data-card { display: flex; align-items: center; gap: 12px; background: oklch(0.99 0.005 150); border: 1px solid oklch(0.922 0.007 150); border-radius: 10px; padding: 16px; } .ds-data-card__icon { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: oklch(0.38 0.175 150 / 0.10); border-radius: 8px; color: oklch(0.38 0.175 150); flex-shrink: 0; } .ds-data-card__number { font-size: 1.5rem; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; } .ds-data-card__label { font-size: 0.75rem; color: oklch(0.48 0.012 150); margin-top: 2px; }"
+    },
+    {
+      "name": "Workout Set Row",
+      "kind": "custom",
+      "refersTo": "card",
+      "description": "Riga dati allenamento: numero set + peso×reps @RPE. Font mono, allineamento tabulare.",
+      "html": "<div class=\"ds-set-group\"><p class=\"ds-set-group__name\">Squat</p><div class=\"ds-set-row\"><span class=\"ds-set-row__label\">Set 1</span><span class=\"ds-set-row__data\">100kg × 5 @8</span></div><div class=\"ds-set-row\"><span class=\"ds-set-row__label\">Set 2</span><span class=\"ds-set-row__data\">105kg × 3 @9</span></div></div>",
+      "css": ".ds-set-group { background: oklch(0.965 0.007 150 / 0.40); border-radius: 8px; padding: 12px; } .ds-set-group__name { font-size: 0.875rem; font-weight: 600; margin-bottom: 8px; } .ds-set-row { display: flex; justify-content: space-between; font-size: 0.75rem; color: oklch(0.48 0.012 150); padding: 2px 0; } .ds-set-row__data { font-family: 'Geist Mono', ui-monospace, monospace; font-variant-numeric: tabular-nums; }"
+    },
+    {
+      "name": "Sidebar Nav Item",
+      "kind": "nav",
+      "refersTo": "button-ghost",
+      "description": "Voce di navigazione desktop. Active state: verde pieno su sfondo primario.",
+      "html": "<a href=\"#\" class=\"ds-nav-item ds-nav-item--active\"><svg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><rect x=\"3\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"3\" width=\"7\" height=\"7\"/><rect x=\"14\" y=\"14\" width=\"7\" height=\"7\"/><rect x=\"3\" y=\"14\" width=\"7\" height=\"7\"/></svg> Dashboard</a>",
+      "css": ".ds-nav-item { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 8px; font-size: 0.875rem; font-weight: 500; text-decoration: none; color: oklch(0.48 0.012 150); transition: background 150ms ease, color 150ms ease; } .ds-nav-item:hover { background: oklch(0.965 0.007 150); color: oklch(0.13 0.010 150); } .ds-nav-item--active { background: oklch(0.38 0.175 150); color: oklch(0.985 0 0); } .ds-nav-item--active:hover { background: oklch(0.33 0.175 150); color: oklch(0.985 0 0); }"
+    },
+    {
+      "name": "Category Filter Chip",
+      "kind": "chip",
+      "refersTo": "badge-secondary",
+      "description": "Filtro categoria esercizi. Pill shape, aria-pressed. Active state colore semantico per categoria.",
+      "html": "<div style=\"display:flex;gap:8px\"><button class=\"ds-chip\" aria-pressed=\"false\">Tutti</button><button class=\"ds-chip ds-chip--push\" aria-pressed=\"true\">Spinta</button><button class=\"ds-chip\" aria-pressed=\"false\">Gambe</button></div>",
+      "css": ".ds-chip { display: inline-flex; align-items: center; padding: 6px 16px; border-radius: 9999px; font-size: 0.875rem; font-weight: 500; border: none; cursor: pointer; min-height: 36px; background: oklch(0.965 0.007 150); color: oklch(0.48 0.012 150); transition: background 150ms ease, color 150ms ease; } .ds-chip:focus-visible { outline: 2px solid oklch(0.38 0.175 150); outline-offset: 2px; } .ds-chip--push[aria-pressed=\"true\"] { background: #2563eb; color: white; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Il Cronometro di Gara",
+    "overview": "Questo sistema visivo si ispira agli strumenti di misurazione atletica — Strava, Garmin Connect, i display dei cicloergometri professionali. Ogni elemento ha uno scopo preciso: portare il dato in primo piano senza distrazioni. La grafica è al servizio dei numeri, non il contrario. Il verde sport-tech (hue 150°, OKLCH) è l'unico accento cromatico di sistema — raro, quindi significativo.\n\nIl registro è quello dell'attrezzatura tecnica: bordi netti, spaziatura rigorosa, gerarchia leggibile in meno di due secondi anche con le mani occupate in palestra. Non c'è posto per illustrazioni, badge gamificati o sfumature decorative. Se un elemento non porta informazione, non esiste.",
+    "keyCharacteristics": [
+      "Paletta monocromatica verde (hue 150°) + ambra (hue 55°, solo cardio)",
+      "Typography system-font-first: Geist carica istantaneamente, nessun FOUT",
+      "Tonal layering invece di shadows: profondità via opacità su primary",
+      "Touch-first: target minimi 44px, input numerici con inputmode=decimal",
+      "Reduced-motion compliant: transizioni sempre dentro prefers-reduced-motion"
+    ],
+    "rules": [
+      { "name": "La Regola del Verde Raro",      "body": "Il primary appare su ≤15% della superficie visibile. Quando tutto è verde, niente è importante.",   "section": "colors" },
+      { "name": "La Regola dei Due Accenti",     "body": "Verde = forza/principale. Ambra = cardio. Nessun terzo colore semantico.",                         "section": "colors" },
+      { "name": "La Regola del Mono",            "body": "Qualsiasi numero confrontabile usa font-mono tabular-nums. Un font proporzionale in una lista è un bug visivo.", "section": "typography" },
+      { "name": "La Regola del Titolo Unico",   "body": "Una sola h1 per schermata, sempre text-2xl font-bold. Nessuna competizione tipografica.",             "section": "typography" },
+      { "name": "La Regola del Piatto-di-Default", "body": "Nessuna ombra a riposo. shadow-sm solo su hover/focus. shadow-md solo su elementi elevati.",      "section": "elevation" }
+    ],
+    "dos": [
+      "Do usare tabular-nums font-mono per qualsiasi numero confrontabile: pesi, reps, RPE, volume, PR.",
+      "Do mantenere touch target ≥ 44px per qualsiasi elemento interattivo.",
+      "Do mostrare il contesto di programma (settimana, giorno, scheda) prima di chiedere input.",
+      "Do usare aria-pressed su tutti i filtri/chip toggle.",
+      "Do aggiungere role=alert aria-live=polite sui messaggi di errore inline.",
+      "Do applicare inputmode=decimal su tutti gli input numerici per la tastiera numerica su mobile."
+    ],
+    "donts": [
+      "Don't usare template Bootstrap, sfumature viola-arancio, foto stock di manubri, badge fitness gamificati.",
+      "Don't aggiungere blue navy + donut chart, hero con laptop mockup, copy stile 'supercharge your performance'.",
+      "Don't usare verde neon, emoji motivazionali, gamification spinta.",
+      "Don't aggiungere illustrazioni decorative o icone ornamentali senza informazione.",
+      "Don't usare più di due famiglie di font.",
+      "Don't mettere testo a meno di 14px su mobile.",
+      "Don't aggiungere un terzo colore accent oltre verde e ambra.",
+      "Don't usare box-shadow strutturali su card a riposo.",
+      "Don't omettere tabular-nums su numeri in lista."
+    ]
+  }
+}

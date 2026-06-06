@@ -119,17 +119,30 @@
   --sidebar-ring: oklch(0.57 0.195 150);
 }
 
+/* Easing system (product register: 150–250ms, no bounce/elastic) */
+:root {
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo:  cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-standard:  cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+    font-kerning: normal;
     transition: background-color 0.2s ease, color 0.2s ease;
   }
   html {
     @apply font-sans;
+    font-optical-sizing: auto;
   }
+  /* Heading letter-spacing: tighter tracking for visual weight */
+  h1 { letter-spacing: -0.025em; line-height: 1.2; }
+  h2 { letter-spacing: -0.015em; line-height: 1.25; }
+  h3 { letter-spacing: -0.01em; }
   /* Smooth focus rings and consistent outline radius */
   :focus-visible {
     outline-offset: 2px;
@@ -137,6 +150,30 @@
   /* Tabular numbers for all numeric data contexts */
   .tabular-nums {
     font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Entrance animation — cards, stat rows */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+
+.animate-fade-up {
+  animation: fade-up 200ms var(--ease-out-quart) both;
+}
+
+/* Staggered children: set --i on each element */
+.stagger-children > * {
+  animation: fade-up 200ms var(--ease-out-quart) both;
+  animation-delay: calc(var(--i, 0) * 50ms);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

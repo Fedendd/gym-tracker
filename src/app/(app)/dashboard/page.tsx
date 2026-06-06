@@ -116,60 +116,44 @@ export default async function DashboardPage() {
 
       {/* Stats row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Flame className="h-4 w-4 text-primary" />
+        {[
+          {
+            icon: <Flame className="h-4 w-4 text-primary" />,
+            iconBg: "bg-primary/10",
+            value: trainingThisWeek,
+            label: "sessioni questa settimana",
+          },
+          {
+            icon: <TrendingUp className="h-4 w-4 text-[oklch(0.52_0.155_55)] dark:text-[oklch(0.72_0.155_55)]" />,
+            iconBg: "bg-[oklch(0.65_0.155_55)]/10 dark:bg-[oklch(0.72_0.155_55)]/15",
+            value: totalMonthlyVolume > 0 ? `${(totalMonthlyVolume / 1000).toFixed(1)}t` : "—",
+            label: "volume questo mese",
+          },
+          {
+            icon: <Trophy className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />,
+            iconBg: "bg-yellow-100 dark:bg-yellow-900/30",
+            value: prs.length,
+            label: "personal records",
+          },
+          {
+            icon: <Activity className="h-4 w-4 text-primary" />,
+            iconBg: "bg-primary/10",
+            value: trainingThisMonth,
+            label: "sessioni questo mese",
+          },
+        ].map((stat, i) => (
+          <Card key={i} className="animate-fade-up" style={{ animationDelay: `${i * 60}ms` }}>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <div className={`p-2 rounded-lg ${stat.iconBg}`}>{stat.icon}</div>
+                <div>
+                  <p className="text-2xl font-bold tabular-nums">{stat.value}</p>
+                  <p className="text-xs text-muted-foreground">{stat.label}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-2xl font-bold tabular-nums">{trainingThisWeek}</p>
-                <p className="text-xs text-muted-foreground">sessioni questa settimana</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-[oklch(0.65_0.155_55)]/10 dark:bg-[oklch(0.72_0.155_55)]/15">
-                <TrendingUp className="h-4 w-4 text-[oklch(0.52_0.155_55)] dark:text-[oklch(0.72_0.155_55)]" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold tabular-nums">
-                  {totalMonthlyVolume > 0 ? `${(totalMonthlyVolume / 1000).toFixed(1)}t` : "—"}
-                </p>
-                <p className="text-xs text-muted-foreground">volume questo mese</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
-                <Trophy className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold tabular-nums">{prs.length}</p>
-                <p className="text-xs text-muted-foreground">personal records</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Activity className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <p className="text-2xl font-bold tabular-nums">{trainingThisMonth}</p>
-                <p className="text-xs text-muted-foreground">sessioni questo mese</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Active program banner */}

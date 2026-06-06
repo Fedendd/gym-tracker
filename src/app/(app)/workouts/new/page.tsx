@@ -162,6 +162,9 @@ export default function NewWorkoutPage() {
   }
 
   const removeSet = (groupIdx: number, setIdx: number) => {
+    const group = exerciseGroups[groupIdx]
+    const isLastSet = group.sets.length === 1
+    if (isLastSet && !window.confirm(`Rimuovere l'esercizio "${group.exerciseName}" e tutti i dati registrati?`)) return
     const updated = [...exerciseGroups]
     updated[groupIdx].sets.splice(setIdx, 1)
     if (updated[groupIdx].sets.length === 0) updated.splice(groupIdx, 1)
@@ -210,7 +213,8 @@ export default function NewWorkoutPage() {
       toast.success("Allenamento salvato!")
       router.push("/workouts")
     } else {
-      toast.error("Errore nel salvataggio")
+      const err = await res.json().catch(() => null)
+      toast.error(err?.message ?? `Errore ${res.status}: impossibile salvare l'allenamento`)
     }
   }
 
@@ -298,7 +302,7 @@ export default function NewWorkoutPage() {
                 <span className="col-span-1">Set</span>
                 <span className="col-span-4">Peso (kg)</span>
                 <span className="col-span-3">Reps</span>
-                <span className="col-span-2">RPE</span>
+                <span className="col-span-2" title="Rate of Perceived Exertion: 1 = sforzo minimo, 10 = massimo sforzo possibile">RPE <span className="text-[10px] opacity-60">1–10</span></span>
                 <span className="col-span-2 text-center">✓</span>
               </div>
               {group.sets.map((set, setIdx) => (
@@ -307,6 +311,7 @@ export default function NewWorkoutPage() {
                   <Input
                     className="col-span-4 h-8 text-sm font-mono"
                     type="number"
+                    inputMode="decimal"
                     step="0.5"
                     placeholder="—"
                     value={set.weight}
@@ -315,6 +320,7 @@ export default function NewWorkoutPage() {
                   <Input
                     className="col-span-3 h-8 text-sm font-mono"
                     type="number"
+                    inputMode="numeric"
                     placeholder="—"
                     value={set.reps}
                     onChange={(e) => updateSet(groupIdx, setIdx, "reps", e.target.value)}
@@ -322,9 +328,11 @@ export default function NewWorkoutPage() {
                   <Input
                     className="col-span-2 h-8 text-sm font-mono"
                     type="number"
+                    inputMode="numeric"
                     min={1}
                     max={10}
                     placeholder="—"
+                    aria-label="RPE (Rate of Perceived Exertion, scala 1-10)"
                     value={set.rpe}
                     onChange={(e) => updateSet(groupIdx, setIdx, "rpe", e.target.value)}
                   />
