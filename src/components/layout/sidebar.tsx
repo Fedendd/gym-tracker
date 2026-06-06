@@ -132,7 +132,7 @@ export function BottomNav() {
   const items = isAdmin ? adminBottomItems : userBottomItems
 
   return (
-    <nav aria-label="Navigazione mobile" className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t flex items-stretch">
+    <nav aria-label="Navigazione mobile" className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t flex items-stretch" style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}>
       {items.map(({ href, label, icon: Icon }) => {
         const active = pathname === href || pathname.startsWith(href + "/")
         return (

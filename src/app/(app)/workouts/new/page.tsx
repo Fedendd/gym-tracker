@@ -169,13 +169,15 @@ export default function NewWorkoutPage() {
 
   const removeSet = (groupIdx: number, setIdx: number) => {
     const group = exerciseGroups[groupIdx]
-    const isLastSet = group.sets.length === 1
-    if (isLastSet && !window.confirm(`Rimuovere l'esercizio "${group.exerciseName}" e tutti i dati registrati?`)) return
-    const updated = [...exerciseGroups]
+    const snapshot = JSON.parse(JSON.stringify(exerciseGroups)) as ExerciseGroup[]
+    const updated = exerciseGroups.map((g) => ({ ...g, sets: [...g.sets] }))
     updated[groupIdx].sets.splice(setIdx, 1)
     if (updated[groupIdx].sets.length === 0) updated.splice(groupIdx, 1)
     else updated[groupIdx].sets.forEach((s, i) => (s.setNumber = i + 1))
     setExerciseGroups(updated)
+    toast(`Set rimosso da "${group.exerciseName}"`, {
+      action: { label: "Annulla", onClick: () => setExerciseGroups(snapshot) },
+    })
   }
 
   const updateSet = (groupIdx: number, setIdx: number, field: keyof SetData, value: string | boolean) => {
@@ -325,7 +327,7 @@ export default function NewWorkoutPage() {
                 <span className="col-span-2 text-center">✓</span>
               </div>
               {group.sets.map((set, setIdx) => (
-                <div key={setIdx} className="grid grid-cols-12 gap-1 items-center">
+                <div key={setIdx} className={cn("grid grid-cols-12 gap-1 items-center transition-opacity duration-150", set.completed && "opacity-50")}>
                   <span className="col-span-1 text-xs font-mono text-center text-muted-foreground">{set.setNumber}</span>
                   <Input
                     className="col-span-4 h-8 text-sm font-mono"

@@ -95,11 +95,14 @@ export default async function DashboardPage() {
     return d
   })
 
+  const hour = now.getHours()
+  const greeting = hour < 12 ? "Buongiorno" : hour < 18 ? "Buon pomeriggio" : "Buonasera"
+
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Ciao, {session?.user?.name?.split(" ")[0]} 👋</h1>
+          <h1 className="text-2xl font-bold">{greeting}, {session?.user?.name?.split(" ")[0]}</h1>
           <p className="text-muted-foreground text-sm mt-1">
             {format(now, "EEEE d MMMM yyyy", { locale: it })}
           </p>
@@ -147,7 +150,7 @@ export default async function DashboardPage() {
               <div className="flex items-center gap-3">
                 <div className={`p-2 rounded-lg ${stat.iconBg}`}>{stat.icon}</div>
                 <div>
-                  <p className="text-2xl font-bold tabular-nums">{stat.value}</p>
+                  <p className="text-3xl font-bold tabular-nums leading-none">{stat.value}</p>
                   <p className="text-xs text-muted-foreground">{stat.label}</p>
                 </div>
               </div>

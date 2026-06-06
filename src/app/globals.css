@@ -153,6 +153,14 @@
   }
 }
 
+/* Bolder: primary button hover lift + active press */
+[data-slot="button"]:not([disabled]):hover {
+  transform: translateY(-1px);
+}
+[data-slot="button"]:not([disabled]):active {
+  transform: translateY(0px) scale(0.98);
+}
+
 /* Entrance animation — cards, stat rows */
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(6px); }

@@ -74,6 +74,8 @@ function ExerciseImage({ src, alt, animate = false }: { src: string | null; alt:
       src={frame === 0 ? src : (src1 ?? src)}
       alt={alt}
       className="w-full h-full object-cover"
+      loading="lazy"
+      decoding="async"
       onError={() => setErr(true)}
     />
   )
