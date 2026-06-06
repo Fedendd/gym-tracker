@@ -35,11 +35,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     jwt({ token, user }) {
-      if (user) token.id = user.id
+      if (user) {
+        token.id = user.id
+        token.role = (user as { role?: string }).role ?? "USER"
+      }
       return token
     },
     session({ session, token }) {
-      if (session.user && token.id) session.user.id = token.id as string
+      if (session.user) {
+        session.user.id = token.id as string
+        session.user.role = (token.role as string) ?? "USER"
+      }
       return session
     },
   },

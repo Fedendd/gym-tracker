@@ -28,17 +28,22 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json()
 
-  // If setting this as active, deactivate others
+  // Admin can create a program for a specific client
+  const targetUserId = (session.user.role === "ADMIN" && body.clientId)
+    ? body.clientId
+    : session.user.id
+
   if (body.isActive) {
     await prisma.program.updateMany({
-      where: { userId: session.user.id, isActive: true },
+      where: { userId: targetUserId, isActive: true },
       data: { isActive: false },
     })
   }
 
   const program = await prisma.program.create({
     data: {
-      userId: session.user.id,
+      userId: targetUserId,
+      createdById: session.user.id,
       name: body.name,
       weeks: body.weeks ?? 6,
       isActive: body.isActive ?? true,

@@ -1,21 +1,43 @@
 "use client"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { Suspense, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Dumbbell } from "lucide-react"
+import { Dumbbell, AlertCircle } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { buttonVariants } from "@/components/ui/button"
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const inviteToken = searchParams.get("invite") ?? ""
+
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" })
   const [loading, setLoading] = useState(false)
+
+  if (!inviteToken) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <Card className="w-full max-w-sm text-center">
+          <CardContent className="pt-8 pb-8 space-y-4">
+            <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
+            <h2 className="text-xl font-semibold">Link non valido</h2>
+            <p className="text-sm text-muted-foreground">
+              Per registrarti serve un link di invito dal tuo coach.
+            </p>
+            <Link href="/auth/signin" className={cn(buttonVariants({ variant: "outline" }), "w-full")}>
+              Vai al login
+            </Link>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -27,7 +49,12 @@ export default function RegisterPage() {
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: form.name, email: form.email, password: form.password }),
+      body: JSON.stringify({
+        name: form.name,
+        email: form.email,
+        password: form.password,
+        inviteToken,
+      }),
     })
     const data = await res.json()
     setLoading(false)
@@ -50,7 +77,7 @@ export default function RegisterPage() {
             </div>
           </div>
           <CardTitle className="text-2xl">Crea account</CardTitle>
-          <CardDescription>Registrati per iniziare a tracciare</CardDescription>
+          <CardDescription>Completa la registrazione per iniziare</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -109,5 +136,13 @@ export default function RegisterPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
   )
 }

@@ -9,6 +9,11 @@ datasource db {
 
 // ─── Auth (NextAuth) ───────────────────────────────────────────────────────
 
+enum Role {
+  ADMIN
+  USER
+}
+
 model User {
   id             String    @id @default(cuid())
   name           String?
@@ -16,7 +21,10 @@ model User {
   emailVerified  DateTime?
   image          String?
   hashedPassword String?
+  role           Role      @default(USER)
   createdAt      DateTime  @default(now())
+  phone          String?
+  dateOfBirth    DateTime?
 
   accounts        Account[]
   sessions        Session[]
@@ -24,6 +32,9 @@ model User {
   workoutSessions WorkoutSession[]
   cardioSessions  CardioSession[]
   personalRecords PersonalRecord[]
+  invitesCreated  Invite[]
+  dietNote        DietNote?
+  programsCreated Program[]        @relation("ProgramCreatedBy")
 }
 
 model Account {
@@ -59,6 +70,30 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
+model Invite {
+  id          String    @id @default(cuid())
+  token       String    @unique @default(cuid())
+  email       String?
+  createdById String
+  usedAt      DateTime?
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+
+  createdBy User @relation(fields: [createdById], references: [id], onDelete: Cascade)
+}
+
+model DietNote {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  title       String   @default("Piano alimentare")
+  description String   @default("")
+  content     String   @default("")
+  updatedAt   DateTime @updatedAt
+  updatedById String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
 // ─── Exercise Library ──────────────────────────────────────────────────────
 
 model Exercise {
@@ -88,16 +123,18 @@ enum ExerciseCategory {
 // ─── Programs ─────────────────────────────────────────────────────────────
 
 model Program {
-  id        String   @id @default(cuid())
-  userId    String
-  name      String
-  weeks     Int      @default(6)
-  isActive  Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  userId      String
+  name        String
+  weeks       Int      @default(6)
+  isActive    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  createdById String?
 
-  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  days     ProgramDay[]
-  sessions WorkoutSession[]
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdBy User?            @relation("ProgramCreatedBy", fields: [createdById], references: [id])
+  days      ProgramDay[]
+  sessions  WorkoutSession[]
 }
 
 model ProgramDay {

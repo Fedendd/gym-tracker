@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { signOut } from "next-auth/react"
+import { useSession, signOut } from "next-auth/react"
 import {
   LayoutDashboard,
   Dumbbell,
@@ -11,26 +11,57 @@ import {
   Activity,
   BarChart3,
   LogOut,
+  Users,
+  LinkIcon,
+  Salad,
+  ShieldCheck,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
-export const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/workouts",  label: "Allenamenti", icon: Dumbbell },
-  { href: "/programs",  label: "Programmi",   icon: ClipboardList },
-  { href: "/exercises", label: "Esercizi",    icon: BookOpen },
-  { href: "/cardio",    label: "Cardio",      icon: Activity },
-  { href: "/analytics", label: "Progressi",   icon: BarChart3 },
+const userNavItems = [
+  { href: "/dashboard",  label: "Dashboard",   icon: LayoutDashboard },
+  { href: "/workouts",   label: "Allenamenti", icon: Dumbbell },
+  { href: "/programs",   label: "Programmi",   icon: ClipboardList },
+  { href: "/dieta",      label: "Dieta",       icon: Salad },
+  { href: "/exercises",  label: "Esercizi",    icon: BookOpen },
+  { href: "/cardio",     label: "Cardio",      icon: Activity },
+  { href: "/analytics",  label: "Progressi",   icon: BarChart3 },
+]
+
+const adminNavItems = [
+  { href: "/dashboard",     label: "Dashboard",   icon: LayoutDashboard },
+  { href: "/admin/clients", label: "Clienti",     icon: Users },
+  { href: "/admin/invites", label: "Inviti",      icon: LinkIcon },
+  { href: "/workouts",      label: "Allenamenti", icon: Dumbbell },
+  { href: "/exercises",     label: "Esercizi",    icon: BookOpen },
+]
+
+const userBottomItems = [
+  { href: "/dashboard",  label: "Home",      icon: LayoutDashboard },
+  { href: "/workouts",   label: "Workout",   icon: Dumbbell },
+  { href: "/dieta",      label: "Dieta",     icon: Salad },
+  { href: "/exercises",  label: "Esercizi",  icon: BookOpen },
+  { href: "/cardio",     label: "Cardio",    icon: Activity },
+]
+
+const adminBottomItems = [
+  { href: "/dashboard",     label: "Home",     icon: LayoutDashboard },
+  { href: "/admin/clients", label: "Clienti",  icon: Users },
+  { href: "/workouts",      label: "Workout",  icon: Dumbbell },
+  { href: "/admin/invites", label: "Inviti",   icon: LinkIcon },
+  { href: "/exercises",     label: "Esercizi", icon: BookOpen },
 ]
 
 interface SidebarProps {
-  user: { name?: string | null; email?: string | null; image?: string | null }
+  user: { name?: string | null; email?: string | null; image?: string | null; role?: string }
 }
 
 export function Sidebar({ user }: SidebarProps) {
   const pathname = usePathname()
+  const isAdmin = user.role === "ADMIN"
+  const navItems = isAdmin ? adminNavItems : userNavItems
 
   const initials = user.name
     ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
@@ -43,9 +74,15 @@ export function Sidebar({ user }: SidebarProps) {
           <Dumbbell className="h-6 w-6 text-primary" />
           <span className="font-bold text-lg tracking-tight">Gym Tracker</span>
         </div>
+        {isAdmin && (
+          <div className="flex items-center gap-1.5 mt-2">
+            <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+            <span className="text-xs font-medium text-primary">Admin</span>
+          </div>
+        )}
       </div>
 
-      <nav className="flex-1 p-3 space-y-1">
+      <nav aria-label="Navigazione principale" className="flex-1 p-3 space-y-1">
         {navItems.map(({ href, label, icon: Icon }) => (
           <Link
             key={href}
@@ -90,10 +127,13 @@ export function Sidebar({ user }: SidebarProps) {
 
 export function BottomNav() {
   const pathname = usePathname()
+  const { data: session } = useSession()
+  const isAdmin = session?.user?.role === "ADMIN"
+  const items = isAdmin ? adminBottomItems : userBottomItems
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t flex items-stretch">
-      {navItems.map(({ href, label, icon: Icon }) => {
+    <nav aria-label="Navigazione mobile" className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t flex items-stretch">
+      {items.map(({ href, label, icon: Icon }) => {
         const active = pathname === href || pathname.startsWith(href + "/")
         return (
           <Link

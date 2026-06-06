@@ -59,7 +59,7 @@ export default function SignInPage() {
               />
             </div>
             {state?.error && (
-              <p className="text-sm text-destructive text-center font-medium">
+              <p role="alert" aria-live="polite" className="text-sm text-destructive text-center font-medium">
                 {state.error}
               </p>
             )}

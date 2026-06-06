@@ -62,8 +62,8 @@ export default async function WorkoutsPage() {
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
-                      <div className="p-1.5 rounded-lg bg-blue-100 dark:bg-blue-900">
-                        <Dumbbell className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                      <div className="p-1.5 rounded-lg bg-primary/10">
+                        <Dumbbell className="h-4 w-4 text-primary" />
                       </div>
                       <div>
                         <p className="font-semibold">
@@ -85,7 +85,7 @@ export default async function WorkoutsPage() {
                         </div>
                       )}
                       {volume > 0 && (
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground tabular-nums">
                           <TrendingUp className="h-3.5 w-3.5" />
                           {(volume / 1000).toFixed(1)}t
                         </div>

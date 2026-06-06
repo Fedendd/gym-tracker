@@ -5,7 +5,7 @@ import { it } from "date-fns/locale"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
-import { Dumbbell, Activity, Trophy, Calendar, TrendingUp, ClipboardList } from "lucide-react"
+import { Dumbbell, Activity, Trophy, Calendar, TrendingUp, ClipboardList, Flame, Plus } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import type {
@@ -17,13 +17,19 @@ type SessionWithSets = WorkoutSession & {
   programDay: ProgramDay | null
 }
 type PRWithExercise = PersonalRecord & { exercise: Exercise }
+type ProgramWithDays = Program & { days: { id: string; name: string; dayNumber: number }[] }
 
 export default async function DashboardPage() {
   const session = await auth()
   const userId = session!.user!.id!
   const now = new Date()
 
-  const [lastWorkout, lastCardio, prs, allSessions, allCardio, activeProgram] = await Promise.all([
+  // Start of current week (Monday)
+  const startOfThisWeek = new Date(now)
+  startOfThisWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7))
+  startOfThisWeek.setHours(0, 0, 0, 0)
+
+  const [lastWorkout, , prs, allSessions, allCardio, activeProgram, monthSessions] = await Promise.all([
     prisma.workoutSession.findFirst({
       where: { userId, completed: true },
       orderBy: { date: "desc" },
@@ -47,7 +53,15 @@ export default async function DashboardPage() {
       where: { userId, date: { gte: startOfMonth(subMonths(now, 2)), lte: endOfMonth(now) } },
       select: { date: true },
     }),
-    prisma.program.findFirst({ where: { userId, isActive: true } }) as Promise<Program | null>,
+    prisma.program.findFirst({
+      where: { userId, isActive: true },
+      include: { days: { orderBy: { dayNumber: "asc" }, select: { id: true, name: true, dayNumber: true } } },
+    }) as Promise<ProgramWithDays | null>,
+    // Monthly sessions with sets for volume calculation
+    prisma.workoutSession.findMany({
+      where: { userId, date: { gte: startOfMonth(now), lte: endOfMonth(now) }, completed: true },
+      select: { sets: { where: { completed: true }, select: { weight: true, reps: true } } },
+    }),
   ])
 
   const allTrainingDays = [
@@ -59,7 +73,14 @@ export default async function DashboardPage() {
     (d) => new Date(d.date) >= startOfMonth(now) && new Date(d.date) <= endOfMonth(now)
   ).length
 
-  const totalVolume = lastWorkout?.sets.reduce((acc, s) => acc + (s.weight ?? 0) * (s.reps ?? 0), 0) ?? 0
+  const trainingThisWeek = allTrainingDays.filter(
+    (d) => new Date(d.date) >= startOfThisWeek && new Date(d.date) <= now
+  ).length
+
+  const totalMonthlyVolume = monthSessions.reduce(
+    (acc, s) => acc + s.sets.reduce((a, set) => a + (set.weight ?? 0) * (set.reps ?? 0), 0),
+    0
+  )
 
   const groupedExercises = lastWorkout?.sets.reduce<Record<string, typeof lastWorkout.sets>>((acc, set) => {
     const name = set.exercise.nameIt ?? set.exercise.name
@@ -88,7 +109,7 @@ export default async function DashboardPage() {
             + Cardio
           </Link>
           <Link href="/workouts/new" className={cn(buttonVariants({ size: "sm" }))}>
-            + Allenamento
+            <Plus className="h-4 w-4 mr-1" /> Allenamento
           </Link>
         </div>
       </div>
@@ -98,12 +119,12 @@ export default async function DashboardPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-100 dark:bg-blue-900">
-                <Calendar className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Flame className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{trainingThisMonth}</p>
-                <p className="text-xs text-muted-foreground">sessioni questo mese</p>
+                <p className="text-2xl font-bold tabular-nums">{trainingThisWeek}</p>
+                <p className="text-xs text-muted-foreground">sessioni questa settimana</p>
               </div>
             </div>
           </CardContent>
@@ -111,12 +132,14 @@ export default async function DashboardPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-orange-100 dark:bg-orange-900">
-                <TrendingUp className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+              <div className="p-2 rounded-lg bg-[oklch(0.65_0.155_55)]/10 dark:bg-[oklch(0.72_0.155_55)]/15">
+                <TrendingUp className="h-4 w-4 text-[oklch(0.52_0.155_55)] dark:text-[oklch(0.72_0.155_55)]" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{totalVolume > 0 ? `${(totalVolume / 1000).toFixed(1)}t` : "—"}</p>
-                <p className="text-xs text-muted-foreground">volume ultimo allenamento</p>
+                <p className="text-2xl font-bold tabular-nums">
+                  {totalMonthlyVolume > 0 ? `${(totalMonthlyVolume / 1000).toFixed(1)}t` : "—"}
+                </p>
+                <p className="text-xs text-muted-foreground">volume questo mese</p>
               </div>
             </div>
           </CardContent>
@@ -124,11 +147,11 @@ export default async function DashboardPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-green-100 dark:bg-green-900">
-                <Trophy className="h-4 w-4 text-green-600 dark:text-green-400" />
+              <div className="p-2 rounded-lg bg-yellow-100 dark:bg-yellow-900/30">
+                <Trophy className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{prs.length}</p>
+                <p className="text-2xl font-bold tabular-nums">{prs.length}</p>
                 <p className="text-xs text-muted-foreground">personal records</p>
               </div>
             </div>
@@ -137,17 +160,57 @@ export default async function DashboardPage() {
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-purple-100 dark:bg-purple-900">
-                <Activity className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+              <div className="p-2 rounded-lg bg-primary/10">
+                <Activity className="h-4 w-4 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{lastCardio?.durationMins ?? "—"}</p>
-                <p className="text-xs text-muted-foreground">min ultimo cardio</p>
+                <p className="text-2xl font-bold tabular-nums">{trainingThisMonth}</p>
+                <p className="text-xs text-muted-foreground">sessioni questo mese</p>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Active program banner */}
+      {activeProgram ? (
+        <Card className="border-primary/20 bg-primary/5">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <ClipboardList className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">{activeProgram.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {activeProgram.days.length} giorni ·{" "}
+                    {activeProgram.days.map((d) => d.name).join(", ")}
+                  </p>
+                </div>
+              </div>
+              <Link href="/workouts/new" className={cn(buttonVariants({ size: "sm" }))}>
+                <Dumbbell className="h-3.5 w-3.5 mr-1.5" /> Inizia sessione
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card className="border-dashed">
+          <CardContent className="p-4 flex items-center justify-between flex-wrap gap-3">
+            <div className="flex items-center gap-3">
+              <ClipboardList className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="font-medium text-sm">Nessun programma attivo</p>
+                <p className="text-xs text-muted-foreground">Crea il tuo programma periodizzato</p>
+              </div>
+            </div>
+            <Link href="/programs/new" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+              Crea programma
+            </Link>
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Calendar */}
@@ -160,7 +223,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-7 gap-1 text-center mb-2">
-              {["Dom", "Lun", "Mar", "Mer", "Gio", "Ven", "Sab"].map((d) => (
+              {["Lun", "Mar", "Mer", "Gio", "Ven", "Sab", "Dom"].map((d) => (
                 <div key={d} className="text-xs text-muted-foreground font-medium py-1">{d}</div>
               ))}
             </div>
@@ -181,16 +244,16 @@ export default async function DashboardPage() {
                       "aspect-square flex flex-col items-center justify-center rounded-lg text-xs relative",
                       !isCurrentMonth && "opacity-30",
                       isToday && "ring-2 ring-primary",
-                      strengthDay && !cardioDay && "bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 font-semibold",
-                      cardioDay && !strengthDay && "bg-orange-100 dark:bg-orange-900/40 text-orange-700 dark:text-orange-300 font-semibold",
-                      strengthDay && cardioDay && "bg-gradient-to-br from-blue-100 to-orange-100 dark:from-blue-900/40 dark:to-orange-900/40 font-semibold",
+                      strengthDay && !cardioDay && "bg-primary/15 dark:bg-primary/25 text-primary font-semibold",
+                      cardioDay && !strengthDay && "bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 font-semibold",
+                      strengthDay && cardioDay && "bg-primary/15 dark:bg-primary/25 text-primary font-semibold",
                     )}
                   >
                     {day.getDate()}
                     {(strengthDay || cardioDay) && (
                       <span className="absolute bottom-0.5 flex gap-0.5">
-                        {strengthDay && <span className="h-1 w-1 rounded-full bg-blue-500" />}
-                        {cardioDay && <span className="h-1 w-1 rounded-full bg-orange-500" />}
+                        {strengthDay && <span className="h-1 w-1 rounded-full bg-primary" />}
+                        {cardioDay && <span className="h-1 w-1 rounded-full bg-amber-500" />}
                       </span>
                     )}
                   </div>
@@ -199,10 +262,10 @@ export default async function DashboardPage() {
             </div>
             <div className="flex gap-4 mt-3 justify-end">
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span className="h-2 w-2 rounded-full bg-blue-500" /> Forza
+                <span className="h-2 w-2 rounded-full bg-primary" /> Forza
               </div>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <span className="h-2 w-2 rounded-full bg-orange-500" /> Cardio
+                <span className="h-2 w-2 rounded-full bg-amber-500" /> Cardio
               </div>
             </div>
           </CardContent>
@@ -292,22 +355,6 @@ export default async function DashboardPage() {
             )}
             <Link href="/workouts" className={cn(buttonVariants({ variant: "ghost", size: "sm" }), "mt-4")}>
               Vedi storico completo →
-            </Link>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Active program prompt */}
-      {!activeProgram && (
-        <Card className="border-dashed">
-          <CardContent className="p-6 text-center">
-            <ClipboardList className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
-            <p className="font-medium mb-1">Nessun programma attivo</p>
-            <p className="text-sm text-muted-foreground mb-4">
-              Crea il tuo programma di allenamento periodizzato
-            </p>
-            <Link href="/programs/new" className={cn(buttonVariants({ size: "sm" }))}>
-              Crea programma
             </Link>
           </CardContent>
         </Card>

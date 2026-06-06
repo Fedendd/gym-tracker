@@ -154,7 +154,8 @@ export default function ExercisesPage() {
         {query && (
           <button
             onClick={() => setQuery("")}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+            aria-label="Cancella ricerca"
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <X className="h-4 w-4" />
           </button>
@@ -167,8 +168,9 @@ export default function ExercisesPage() {
           <button
             key={cat.key}
             onClick={() => setCategory(cat.key)}
+            aria-pressed={category === cat.key}
             className={cn(
-              "px-4 py-1.5 rounded-full text-sm font-medium transition-all",
+              "px-4 py-2 rounded-full text-sm font-medium transition-all min-h-[36px]",
               category === cat.key
                 ? cat.color + " shadow-sm"
                 : "bg-muted text-muted-foreground hover:bg-muted/80"

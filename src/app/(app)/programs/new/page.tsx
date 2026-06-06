@@ -1,14 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect, Suspense } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Trash2, ChevronLeft, Search } from "lucide-react"
+import { Plus, Trash2, ChevronLeft, Search, UserCheck } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -36,8 +36,12 @@ interface Day {
   exercises: DayExercise[]
 }
 
-export default function NewProgramPage() {
+function NewProgramForm() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const clientId = searchParams.get("clientId")
+  const clientName = searchParams.get("clientName")
+
   const [name, setName] = useState("")
   const [weeks, setWeeks] = useState("6")
   const [days, setDays] = useState<Day[]>([
@@ -107,6 +111,7 @@ export default function NewProgramPage() {
         name,
         weeks: parseInt(weeks),
         isActive: true,
+        clientId: clientId ?? undefined,
         days: days.map((d) => ({
           dayNumber: d.dayNumber,
           name: d.name,
@@ -127,7 +132,7 @@ export default function NewProgramPage() {
     setSaving(false)
     if (res.ok) {
       toast.success("Programma creato!")
-      router.push("/programs")
+      router.push(clientId ? `/admin/clients/${clientId}` : "/programs")
     } else {
       toast.error("Errore nel salvataggio")
     }
@@ -138,11 +143,21 @@ export default function NewProgramPage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       <div className="flex items-center gap-3">
-        <Link href="/programs" className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}>
+        <Link
+          href={clientId ? `/admin/clients/${clientId}` : "/programs"}
+          className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+        >
           <ChevronLeft className="h-4 w-4" />
         </Link>
         <h1 className="text-2xl font-bold">Nuovo programma</h1>
       </div>
+
+      {clientId && (
+        <div className="flex items-center gap-2 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg text-sm text-blue-700 dark:text-blue-300">
+          <UserCheck className="h-4 w-4 shrink-0" />
+          Stai creando un programma per <strong className="ml-1">{clientName ?? "il cliente"}</strong>
+        </div>
+      )}
 
       <Card>
         <CardContent className="p-4 grid grid-cols-2 gap-4">
@@ -265,7 +280,6 @@ export default function NewProgramPage() {
               </div>
             ))}
 
-            {/* Add exercise */}
             {addingToDayIndex === dayIdx ? (
               <div className="border border-dashed rounded-lg p-3">
                 <div className="relative">
@@ -320,11 +334,24 @@ export default function NewProgramPage() {
       </Button>
 
       <div className="flex gap-3 justify-end">
-        <Link href="/programs" className={cn(buttonVariants({ variant: "outline" }))}>Annulla</Link>
+        <Link
+          href={clientId ? `/admin/clients/${clientId}` : "/programs"}
+          className={cn(buttonVariants({ variant: "outline" }))}
+        >
+          Annulla
+        </Link>
         <Button onClick={handleSave} disabled={saving}>
           {saving ? "Salvataggio..." : "Crea programma"}
         </Button>
       </div>
     </div>
+  )
+}
+
+export default function NewProgramPage() {
+  return (
+    <Suspense>
+      <NewProgramForm />
+    </Suspense>
   )
 }
