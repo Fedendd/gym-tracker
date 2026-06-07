@@ -5,7 +5,7 @@ import { it } from "date-fns/locale"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { buttonVariants } from "@/components/ui/button"
-import { ClipboardList, Plus, Dumbbell } from "lucide-react"
+import { ClipboardList, Plus, Dumbbell, Pencil } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 
@@ -94,6 +94,12 @@ export default async function ProgramsPage() {
                     className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
                   >
                     <Dumbbell className="h-3.5 w-3.5 mr-1.5" /> Inizia sessione
+                  </Link>
+                  <Link
+                    href={`/programs/${program.id}/edit`}
+                    className={cn(buttonVariants({ variant: "ghost", size: "sm" }))}
+                  >
+                    <Pencil className="h-3.5 w-3.5 mr-1.5" /> Modifica
                   </Link>
                 </div>
               </CardContent>
