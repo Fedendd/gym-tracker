@@ -35,6 +35,7 @@ const adminNavItems = [
   { href: "/admin/clients", label: "Clienti",     icon: Users },
   { href: "/admin/invites", label: "Inviti",      icon: LinkIcon },
   { href: "/workouts",      label: "Allenamenti", icon: Dumbbell },
+  { href: "/programs",      label: "Programmi",   icon: ClipboardList },
   { href: "/exercises",     label: "Esercizi",    icon: BookOpen },
 ]
 
@@ -47,11 +48,11 @@ const userBottomItems = [
 ]
 
 const adminBottomItems = [
-  { href: "/dashboard",     label: "Home",     icon: LayoutDashboard },
-  { href: "/admin/clients", label: "Clienti",  icon: Users },
-  { href: "/workouts",      label: "Workout",  icon: Dumbbell },
-  { href: "/admin/invites", label: "Inviti",   icon: LinkIcon },
-  { href: "/exercises",     label: "Esercizi", icon: BookOpen },
+  { href: "/dashboard",     label: "Home",      icon: LayoutDashboard },
+  { href: "/admin/clients", label: "Clienti",   icon: Users },
+  { href: "/workouts",      label: "Workout",   icon: Dumbbell },
+  { href: "/programs",      label: "Programmi", icon: ClipboardList },
+  { href: "/exercises",     label: "Esercizi",  icon: BookOpen },
 ]
 
 interface SidebarProps {
