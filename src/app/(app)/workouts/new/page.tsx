@@ -139,7 +139,8 @@ export default function NewWorkoutPage() {
     if (searchQuery.length < 2) { setSearchResults([]); return }
     const t = setTimeout(async () => {
       const res = await fetch(`/api/exercises?q=${searchQuery}`)
-      setSearchResults(await res.json())
+      const data = await res.json()
+      setSearchResults(data.exercises ?? [])
     }, 300)
     return () => clearTimeout(t)
   }, [searchQuery])
