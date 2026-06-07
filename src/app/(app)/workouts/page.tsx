@@ -45,11 +45,19 @@ export default async function WorkoutsPage() {
       </div>
 
       {sessions.length === 0 ? (
-        <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-xl">
+        <div className="text-center py-16 text-muted-foreground border-2 border-dashed rounded-xl space-y-1">
           <Dumbbell className="h-10 w-10 mx-auto mb-3 opacity-40" />
-          <p className="font-medium">Nessun allenamento registrato</p>
-          <p className="text-sm mt-1 mb-4">Inizia aggiungendo la tua prima sessione</p>
-          <Link href="/workouts/new" className={cn(buttonVariants())}>Inizia allenamento</Link>
+          <p className="font-medium text-foreground">Nessun allenamento registrato</p>
+          <p className="text-sm text-muted-foreground">
+            Hai una scheda? Registra la prima sessione.
+          </p>
+          <p className="text-xs text-muted-foreground pb-2">
+            Non hai ancora una scheda? Creala in{" "}
+            <Link href="/programs" className="underline underline-offset-2 text-primary">Programmi</Link>.
+          </p>
+          <Link href="/workouts/new" className={cn(buttonVariants())}>
+            <Plus className="h-4 w-4 mr-2" /> Registra sessione
+          </Link>
         </div>
       ) : (
         <div className="space-y-3">
