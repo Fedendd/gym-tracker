@@ -212,8 +212,8 @@ function NewProgramForm() {
             <Select value={weeks} onValueChange={(v) => v && setWeeks(v)}>
               <SelectTrigger><SelectValue /></SelectTrigger>
               <SelectContent>
-                {[4, 6, 8, 10, 12].map((w) => (
-                  <SelectItem key={w} value={String(w)}>{w} settimane</SelectItem>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((w) => (
+                  <SelectItem key={w} value={String(w)}>{w} {w === 1 ? "settimana" : "settimane"}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -296,7 +296,7 @@ function NewProgramForm() {
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   <div className="space-y-1">
                     <Label className="text-xs">Serie</Label>
                     <Input
@@ -327,37 +327,22 @@ function NewProgramForm() {
                       onChange={(e) => updateExercise(dayIdx, exIdx, "targetRepsHigh", parseInt(e.target.value))}
                     />
                   </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs">Zona intensità</Label>
-                    <Input
-                      className="h-8 text-sm"
-                      placeholder="60-75%"
-                      value={ex.intensityZone}
-                      onChange={(e) => updateExercise(dayIdx, exIdx, "intensityZone", e.target.value)}
-                    />
-                  </div>
                 </div>
-                <div>
-                  <Label className="text-xs mb-2 block">Carichi per settimana (kg)</Label>
-                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
-                    {Array.from({ length: numWeeks }, (_, w) => w + 1).map((week) => (
-                      <div key={week} className="space-y-0.5">
-                        <Label className="text-xs text-muted-foreground">Sett. {week}</Label>
-                        <Input
-                          type="number"
-                          inputMode="decimal"
-                          className="h-7 text-xs font-mono"
-                          placeholder="—"
-                          value={ex.plannedLoads[String(week)] ?? ""}
-                          onChange={(e) => {
-                            const nd = [...days]
-                            nd[dayIdx].exercises[exIdx].plannedLoads[String(week)] = e.target.value
-                            setDays(nd)
-                          }}
-                        />
-                      </div>
-                    ))}
-                  </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Peso di partenza (kg) <span className="text-muted-foreground font-normal">— opzionale</span></Label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    step="0.5"
+                    className="h-8 text-sm font-mono w-32"
+                    placeholder="—"
+                    value={ex.plannedLoads["1"] ?? ""}
+                    onChange={(e) => {
+                      const nd = [...days]
+                      nd[dayIdx].exercises[exIdx].plannedLoads["1"] = e.target.value
+                      setDays(nd)
+                    }}
+                  />
                 </div>
               </div>
             ))}
