@@ -40,7 +40,7 @@ export default async function WorkoutsPage() {
     }),
   ])
 
-  // Determine suggested next day
+  // Determine suggested next day + current week
   const lastProgramSession = sessions.find((s) => s.programDayId)
   let suggestedDay = activeProgram?.days[0] ?? null
   if (activeProgram && lastProgramSession?.programDayId) {
@@ -49,6 +49,9 @@ export default async function WorkoutsPage() {
       suggestedDay = activeProgram.days[(lastDayIdx + 1) % activeProgram.days.length]
     }
   }
+  const currentWeek = lastProgramSession?.weekNumber ?? 1
+  const weeklyRules = (activeProgram?.weeklyRules ?? {}) as Record<string, string>
+  const todayRule = weeklyRules[String(currentWeek)] ?? null
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -69,6 +72,16 @@ export default async function WorkoutsPage() {
               Inizia <ChevronRight className="h-4 w-4 ml-1" />
             </Link>
           </div>
+
+          {/* Weekly rule banner */}
+          {todayRule && (
+            <div className="mx-5 mb-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 px-3 py-2">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-0.5">
+                Regola — Settimana {currentWeek}
+              </p>
+              <p className="text-xs text-amber-900 dark:text-amber-200 leading-snug">{todayRule}</p>
+            </div>
+          )}
 
           {/* Exercise list for suggested day */}
           <div className="px-5 pb-5">

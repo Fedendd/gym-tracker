@@ -67,6 +67,7 @@ interface Program {
   name: string
   weeks: number
   isActive: boolean
+  weeklyRules: Record<string, string>
   days: ProgramDay[]
 }
 
@@ -390,6 +391,20 @@ export default function NewWorkoutPage() {
           )}
         </div>
       )}
+
+      {/* ── Regola settimana corrente ── */}
+      {mode === "program" && selectedProgram && (() => {
+        const rule = selectedProgram.weeklyRules?.[weekNumber]
+        if (!rule) return null
+        return (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 px-4 py-3">
+            <p className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-1">
+              Regola — Settimana {weekNumber}
+            </p>
+            <p className="text-sm text-amber-900 dark:text-amber-200 leading-snug">{rule}</p>
+          </div>
+        )
+      })()}
 
       {/* ── Step 2: Esercizi ── */}
       {(exerciseGroups.length > 0 || mode === "free") && (
