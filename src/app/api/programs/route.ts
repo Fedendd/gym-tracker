@@ -47,6 +47,7 @@ export async function POST(req: NextRequest) {
       name: body.name,
       weeks: body.weeks ?? 6,
       isActive: body.isActive ?? true,
+      weeklyRules: body.weeklyRules ?? {},
       days: {
         create: (body.days ?? []).map((day: { dayNumber: number; name: string; exercises?: Array<{ exerciseId: string; order: number; targetSets?: number; targetRepsLow?: number; targetRepsHigh?: number; intensityZone?: string; plannedLoads?: Record<string, number> }> }) => ({
           dayNumber: day.dayNumber,

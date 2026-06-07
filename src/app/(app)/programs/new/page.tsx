@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Trash2, ChevronLeft, Search, UserCheck } from "lucide-react"
+import { Plus, Trash2, ChevronLeft, Search, UserCheck, ChevronDown, ChevronUp } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
@@ -36,6 +36,14 @@ interface Day {
   exercises: DayExercise[]
 }
 
+const CATEGORIES = [
+  { key: "PUSH",      label: "Spinta" },
+  { key: "PULL",      label: "Tirata" },
+  { key: "LEGS",      label: "Gambe" },
+  { key: "CORE",      label: "Core" },
+  { key: "FULL_BODY", label: "Full Body" },
+]
+
 function NewProgramForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -44,6 +52,8 @@ function NewProgramForm() {
 
   const [name, setName] = useState("")
   const [weeks, setWeeks] = useState("6")
+  const [weeklyRules, setWeeklyRules] = useState<Record<string, string>>({})
+  const [showWeeklyRules, setShowWeeklyRules] = useState(false)
   const [days, setDays] = useState<Day[]>([
     { dayNumber: 1, name: "Day 1", exercises: [] },
     { dayNumber: 2, name: "Day 2", exercises: [] },
@@ -54,11 +64,19 @@ function NewProgramForm() {
   const [addingToDayIndex, setAddingToDayIndex] = useState<number | null>(null)
   const [saving, setSaving] = useState(false)
 
+  // Creating a new custom exercise inline
+  const [showCreateForm, setShowCreateForm] = useState(false)
+  const [newExName, setNewExName] = useState("")
+  const [newExCategory, setNewExCategory] = useState("PUSH")
+  const [creatingEx, setCreatingEx] = useState(false)
+
   useEffect(() => {
-    if (exerciseQuery.length < 2) { setExerciseResults([]); return }
+    if (exerciseQuery.length < 2) { setExerciseResults([]); setShowCreateForm(false); return }
     const t = setTimeout(async () => {
-      const res = await fetch(`/api/exercises?q=${exerciseQuery}`)
-      setExerciseResults(await res.json())
+      const res = await fetch(`/api/exercises?q=${encodeURIComponent(exerciseQuery)}`)
+      const data = await res.json()
+      setExerciseResults(data.exercises ?? [])
+      setShowCreateForm(false)
     }, 300)
     return () => clearTimeout(t)
   }, [exerciseQuery])
@@ -67,9 +85,7 @@ function NewProgramForm() {
     setDays([...days, { dayNumber: days.length + 1, name: `Day ${days.length + 1}`, exercises: [] }])
   }
 
-  const removeDay = (i: number) => {
-    setDays(days.filter((_, idx) => idx !== i))
-  }
+  const removeDay = (i: number) => setDays(days.filter((_, idx) => idx !== i))
 
   const addExerciseToDay = (dayIndex: number, ex: Exercise) => {
     const newDays = [...days]
@@ -86,6 +102,24 @@ function NewProgramForm() {
     setExerciseQuery("")
     setExerciseResults([])
     setAddingToDayIndex(null)
+    setShowCreateForm(false)
+  }
+
+  const handleCreateExercise = async (dayIndex: number) => {
+    if (!newExName.trim()) return
+    setCreatingEx(true)
+    const res = await fetch("/api/exercises", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: newExName.trim(), nameIt: newExName.trim(), category: newExCategory, muscleGroup: [] }),
+    })
+    setCreatingEx(false)
+    if (!res.ok) { toast.error("Errore nella creazione dell'esercizio"); return }
+    const ex: Exercise = await res.json()
+    toast.success(`"${ex.nameIt ?? ex.name}" aggiunto alla libreria`)
+    addExerciseToDay(dayIndex, ex)
+    setNewExName("")
+    setNewExCategory("PUSH")
   }
 
   const removeExercise = (dayIdx: number, exIdx: number) => {
@@ -111,6 +145,9 @@ function NewProgramForm() {
         name,
         weeks: parseInt(weeks),
         isActive: true,
+        weeklyRules: Object.fromEntries(
+          Object.entries(weeklyRules).filter(([, v]) => v.trim())
+        ),
         clientId: clientId ?? undefined,
         days: days.map((d) => ({
           dayNumber: d.dayNumber,
@@ -159,6 +196,7 @@ function NewProgramForm() {
         </div>
       )}
 
+      {/* Nome + Settimane */}
       <Card>
         <CardContent className="p-4 grid grid-cols-2 gap-4">
           <div className="space-y-1.5">
@@ -183,6 +221,46 @@ function NewProgramForm() {
         </CardContent>
       </Card>
 
+      {/* Regole settimanali (opzionale) */}
+      <Card>
+        <CardContent className="p-0">
+          <button
+            className="w-full flex items-center justify-between p-4 text-sm font-medium hover:bg-muted/40 transition-colors rounded-xl"
+            onClick={() => setShowWeeklyRules(!showWeeklyRules)}
+          >
+            <span>
+              Regole per settimana{" "}
+              <span className="text-muted-foreground font-normal">(opzionale)</span>
+            </span>
+            {showWeeklyRules ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+          </button>
+
+          {showWeeklyRules && (
+            <div className="px-4 pb-4 space-y-3">
+              <p className="text-xs text-muted-foreground">
+                Aggiungi un focus o una progressione per ogni settimana, es. "Aumenta 1 serie", "Aumenta carico", "Tecnica pura", "Zero recupero".
+              </p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {Array.from({ length: numWeeks }, (_, i) => i + 1).map((w) => (
+                  <div key={w} className="space-y-1">
+                    <Label className="text-xs text-muted-foreground">Settimana {w}</Label>
+                    <Input
+                      className="h-8 text-sm"
+                      placeholder="es. Aumenta carico"
+                      value={weeklyRules[String(w)] ?? ""}
+                      onChange={(e) => {
+                        setWeeklyRules((prev) => ({ ...prev, [String(w)]: e.target.value }))
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Giorni */}
       {days.map((day, dayIdx) => (
         <Card key={dayIdx}>
           <CardHeader className="pb-3">
@@ -223,6 +301,7 @@ function NewProgramForm() {
                     <Label className="text-xs">Serie</Label>
                     <Input
                       type="number"
+                      inputMode="numeric"
                       className="h-8 text-sm"
                       value={ex.targetSets}
                       onChange={(e) => updateExercise(dayIdx, exIdx, "targetSets", parseInt(e.target.value))}
@@ -232,6 +311,7 @@ function NewProgramForm() {
                     <Label className="text-xs">Rep min</Label>
                     <Input
                       type="number"
+                      inputMode="numeric"
                       className="h-8 text-sm"
                       value={ex.targetRepsLow}
                       onChange={(e) => updateExercise(dayIdx, exIdx, "targetRepsLow", parseInt(e.target.value))}
@@ -241,6 +321,7 @@ function NewProgramForm() {
                     <Label className="text-xs">Rep max</Label>
                     <Input
                       type="number"
+                      inputMode="numeric"
                       className="h-8 text-sm"
                       value={ex.targetRepsHigh}
                       onChange={(e) => updateExercise(dayIdx, exIdx, "targetRepsHigh", parseInt(e.target.value))}
@@ -261,9 +342,10 @@ function NewProgramForm() {
                   <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5">
                     {Array.from({ length: numWeeks }, (_, w) => w + 1).map((week) => (
                       <div key={week} className="space-y-0.5">
-                        <Label className="text-xs text-muted-foreground">W{week}</Label>
+                        <Label className="text-xs text-muted-foreground">Sett. {week}</Label>
                         <Input
                           type="number"
+                          inputMode="decimal"
                           className="h-7 text-xs font-mono"
                           placeholder="—"
                           value={ex.plannedLoads[String(week)] ?? ""}
@@ -280,39 +362,111 @@ function NewProgramForm() {
               </div>
             ))}
 
+            {/* Exercise search / add */}
             {addingToDayIndex === dayIdx ? (
-              <div className="border border-dashed rounded-lg p-3">
+              <div className="border border-dashed rounded-lg p-3 space-y-2">
                 <div className="relative">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     className="pl-8"
-                    placeholder="Cerca esercizio..."
+                    placeholder="Cerca in italiano o inglese..."
                     value={exerciseQuery}
-                    onChange={(e) => setExerciseQuery(e.target.value)}
+                    onChange={(e) => { setExerciseQuery(e.target.value); setShowCreateForm(false) }}
                     autoFocus
                   />
                 </div>
+
+                {/* Results */}
                 {exerciseResults.length > 0 && (
-                  <div className="mt-2 border rounded-lg overflow-hidden">
-                    {exerciseResults.slice(0, 6).map((ex) => (
+                  <div className="border rounded-lg overflow-hidden">
+                    {exerciseResults.slice(0, 8).map((ex) => (
                       <button
                         key={ex.id}
-                        className="w-full text-left px-3 py-2 hover:bg-muted text-sm flex items-center justify-between"
+                        className="w-full text-left px-3 py-2 hover:bg-muted text-sm flex items-center justify-between gap-2"
                         onClick={() => addExerciseToDay(dayIdx, ex)}
                       >
                         <span>{ex.nameIt ?? ex.name}</span>
-                        <Badge variant="outline" className="text-xs">{ex.category}</Badge>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          {ex.nameIt && ex.name !== ex.nameIt && (
+                            <span className="text-xs text-muted-foreground">{ex.name}</span>
+                          )}
+                          <Badge variant="outline" className="text-xs">{ex.category}</Badge>
+                        </div>
                       </button>
                     ))}
                   </div>
                 )}
+
+                {/* Not found → offer to create */}
+                {exerciseQuery.length >= 2 && exerciseResults.length === 0 && !showCreateForm && (
+                  <div className="text-center py-3 text-sm text-muted-foreground">
+                    <p>Nessun esercizio trovato per <strong>"{exerciseQuery}"</strong></p>
+                    <button
+                      className="mt-2 text-primary underline-offset-2 hover:underline text-sm"
+                      onClick={() => { setNewExName(exerciseQuery); setShowCreateForm(true) }}
+                    >
+                      + Aggiungilo alla libreria
+                    </button>
+                  </div>
+                )}
+
+                {/* Inline create form */}
+                {showCreateForm && (
+                  <div className="border rounded-lg p-3 space-y-3 bg-muted/30">
+                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Nuovo esercizio</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <Label className="text-xs">Nome</Label>
+                        <Input
+                          className="h-8 text-sm"
+                          placeholder="Nome esercizio"
+                          value={newExName}
+                          onChange={(e) => setNewExName(e.target.value)}
+                          autoFocus
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <Label className="text-xs">Categoria</Label>
+                        <Select value={newExCategory} onValueChange={(v) => v && setNewExCategory(v)}>
+                          <SelectTrigger className="h-8 text-sm"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {CATEGORIES.map((c) => (
+                              <SelectItem key={c.key} value={c.key}>{c.label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleCreateExercise(dayIdx)}
+                        disabled={creatingEx || !newExName.trim()}
+                      >
+                        {creatingEx ? "Aggiunta..." : "Aggiungi e inserisci"}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowCreateForm(false)}
+                      >
+                        Annulla
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="mt-2"
-                  onClick={() => { setAddingToDayIndex(null); setExerciseQuery(""); setExerciseResults([]) }}
+                  onClick={() => {
+                    setAddingToDayIndex(null)
+                    setExerciseQuery("")
+                    setExerciseResults([])
+                    setShowCreateForm(false)
+                  }}
                 >
-                  Annulla
+                  Chiudi
                 </Button>
               </div>
             ) : (
@@ -333,7 +487,7 @@ function NewProgramForm() {
         <Plus className="h-4 w-4 mr-2" /> Aggiungi giorno
       </Button>
 
-      <div className="flex gap-3 justify-end">
+      <div className="flex gap-3 justify-end pb-6">
         <Link
           href={clientId ? `/admin/clients/${clientId}` : "/programs"}
           className={cn(buttonVariants({ variant: "outline" }))}

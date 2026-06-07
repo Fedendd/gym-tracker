@@ -123,13 +123,14 @@ enum ExerciseCategory {
 // ─── Programs ─────────────────────────────────────────────────────────────
 
 model Program {
-  id          String   @id @default(cuid())
-  userId      String
-  name        String
-  weeks       Int      @default(6)
-  isActive    Boolean  @default(false)
-  createdAt   DateTime @default(now())
-  createdById String?
+  id           String   @id @default(cuid())
+  userId       String
+  name         String
+  weeks        Int      @default(6)
+  isActive     Boolean  @default(false)
+  weeklyRules  Json     @default("{}")
+  createdAt    DateTime @default(now())
+  createdById  String?
 
   user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdBy User?            @relation("ProgramCreatedBy", fields: [createdById], references: [id])
