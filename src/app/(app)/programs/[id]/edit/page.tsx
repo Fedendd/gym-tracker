@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Button, buttonVariants } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
@@ -204,12 +205,12 @@ export default function EditProgramPage({ params }: { params: Promise<{ id: stri
           </button>
           {showWeeklyRules && (
             <div className="px-4 pb-4 space-y-3">
-              <p className="text-xs text-muted-foreground">Focus o progressione per settimana, es. "Aumenta carico", "Tecnica pura".</p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <p className="text-xs text-muted-foreground">Una regola per riga — ogni riga viene mostrata come punto separato durante l'allenamento.</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {Array.from({ length: numWeeks }, (_, i) => i + 1).map((w) => (
                   <div key={w} className="space-y-1">
                     <Label className="text-xs text-muted-foreground">Settimana {w}</Label>
-                    <Input className="h-8 text-sm" placeholder="es. Aumenta carico" value={weeklyRules[String(w)] ?? ""} onChange={(e) => setWeeklyRules((prev) => ({ ...prev, [String(w)]: e.target.value }))} />
+                    <Textarea className="text-sm min-h-[72px] resize-none" placeholder={"Una regola per riga, es:\nFocus tecnica 1-2\" salita\nUltima serie a cedimento"} value={weeklyRules[String(w)] ?? ""} onChange={(e) => setWeeklyRules((prev) => ({ ...prev, [String(w)]: e.target.value }))} rows={3} />
                   </div>
                 ))}
               </div>

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { format } from "date-fns"
 import { it } from "date-fns/locale"
@@ -398,10 +398,17 @@ export default function NewWorkoutPage() {
         if (!rule) return null
         return (
           <div className="rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 px-4 py-3">
-            <p className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-1">
+            <p className="text-xs font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-1.5">
               Regola — Settimana {weekNumber}
             </p>
-            <p className="text-sm text-amber-900 dark:text-amber-200 leading-snug">{rule}</p>
+            <ul className="space-y-0.5">
+              {rule.split("\n").filter(Boolean).map((line, i) => (
+                <li key={i} className="text-sm text-amber-900 dark:text-amber-200 leading-snug flex gap-2">
+                  <span className="shrink-0 text-amber-500">·</span>
+                  <span>{line.trim()}</span>
+                </li>
+              ))}
+            </ul>
           </div>
         )
       })()}

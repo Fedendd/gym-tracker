@@ -75,25 +75,43 @@ export default async function WorkoutsPage() {
 
           {/* Weekly rule banner */}
           {todayRule && (
-            <div className="mx-5 mb-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 px-3 py-2">
-              <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-0.5">
+            <div className="mx-5 mb-3 rounded-lg border border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950/40 px-3 py-2.5">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-amber-700 dark:text-amber-400 mb-1.5">
                 Regola — Settimana {currentWeek}
               </p>
-              <p className="text-xs text-amber-900 dark:text-amber-200 leading-snug">{todayRule}</p>
+              <ul className="space-y-0.5">
+                {todayRule.split("\n").filter(Boolean).map((line, i) => (
+                  <li key={i} className="text-xs text-amber-900 dark:text-amber-200 leading-snug flex gap-1.5">
+                    <span className="shrink-0 mt-0.5 text-amber-500">·</span>
+                    <span>{line.trim()}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
 
           {/* Exercise list for suggested day */}
           <div className="px-5 pb-5">
             <div className="bg-background/70 rounded-xl divide-y divide-border overflow-hidden">
-              {suggestedDay.exercises.map((te, i) => (
-                <div key={i} className="flex items-center justify-between px-3 py-2.5">
-                  <span className="text-sm font-medium">{te.exercise.nameIt ?? te.exercise.name}</span>
-                  <span className="text-xs font-mono text-muted-foreground tabular-nums">
-                    {te.targetSets}×{te.targetRepsLow}–{te.targetRepsHigh}
-                  </span>
-                </div>
-              ))}
+              {suggestedDay.exercises.map((te, i) => {
+                const plannedLoads = te.plannedLoads as Record<string, number>
+                const weight = plannedLoads[String(currentWeek)] ?? plannedLoads["1"] ?? null
+                return (
+                  <div key={i} className="flex items-center justify-between px-3 py-2.5 gap-2">
+                    <span className="text-sm font-medium">{te.exercise.nameIt ?? te.exercise.name}</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {weight ? (
+                        <span className="text-xs font-mono font-semibold text-primary tabular-nums">
+                          {weight} kg
+                        </span>
+                      ) : null}
+                      <span className="text-xs font-mono text-muted-foreground tabular-nums">
+                        {te.targetSets}×{te.targetRepsLow}–{te.targetRepsHigh}
+                      </span>
+                    </div>
+                  </div>
+                )
+              })}
               {suggestedDay.exercises.length === 0 && (
                 <p className="text-sm text-muted-foreground px-3 py-3">Nessun esercizio in questo giorno.</p>
               )}

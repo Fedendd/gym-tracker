@@ -240,17 +240,18 @@ function NewProgramForm() {
               <p className="text-xs text-muted-foreground">
                 Aggiungi un focus o una progressione per ogni settimana, es. "Aumenta 1 serie", "Aumenta carico", "Tecnica pura", "Zero recupero".
               </p>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {Array.from({ length: numWeeks }, (_, i) => i + 1).map((w) => (
                   <div key={w} className="space-y-1">
                     <Label className="text-xs text-muted-foreground">Settimana {w}</Label>
-                    <Input
-                      className="h-8 text-sm"
-                      placeholder="es. Aumenta carico"
+                    <Textarea
+                      className="text-sm min-h-[72px] resize-none"
+                      placeholder={"Una regola per riga, es:\nFocus tecnica 1-2\" salita\nUltima serie a cedimento"}
                       value={weeklyRules[String(w)] ?? ""}
                       onChange={(e) => {
                         setWeeklyRules((prev) => ({ ...prev, [String(w)]: e.target.value }))
                       }}
+                      rows={3}
                     />
                   </div>
                 ))}
